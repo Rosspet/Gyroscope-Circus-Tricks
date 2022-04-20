@@ -21,6 +21,7 @@ R_min_rotor = 3.5;
 m_rotor = 45; %grams
 m_frame = 23; %grams
 
+%% NE Equations
 
 
 
