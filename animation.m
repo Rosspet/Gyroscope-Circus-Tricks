@@ -5,7 +5,7 @@ close all
 
 
 %% Measuremeants (in mm)
-h_rod = 87;  % 93 - 2*3
+h_rod = 87;  % 93 - 2*3 % maybe include the little shperes.
 H_rot = 59; % 65  - 2*R_min_V_tor
 R_sph = 2; % 4 accros but 3 high. (R is half)
 R_maj_V_tor = 59/2 + 1.5 ; % h_rot / 2 + R_min_V_tor
@@ -76,22 +76,77 @@ F1_3 + Fg_frame_3 + F2_3 = p_frame_dot_3;
 % going to do about G which is assume COM due to it being in the centre
 % of both rings and the pole. and wont need to use parallel axis thm.
 
-
 rGO_3 = -rOG_3;
 
 % hframe_G_3 angular momentum of frame about G in {3}.
 
-Ipole_G_3 = 
+%perfect cylinder of height H (h_rod), radius, r_rot
+%(currently omitting the 2 small spheres for simplicity but can add later 
+% if deemed significant, i.e., non negligible.)
+vol_pole = h_rod*pi*r_rot^2;
+m_pole = rho*vol_pole;
+Ipole_G_3 = [(1/12)*m_pole*(3*r_rot^2+h_rod^2) 0 0; 
+            0 (1/12)*m_pole*(3*r_rot^2+h_rod^2) 0 
+            0 0 (1/2)*m_pole*r_rot^2 
+            ];
+        
+% the ring which goes horizontally - modeled as a torus
+% rho % density of rings and pole.
+vol_ring_H= (pi*R_min_H_tor^2)*(2*pi*R_maj_H_tor);
+m_ring_H = rho*vol_ring_H;    
+IhoriRing_G_3 = [
+    (1/8)*m_ring_H*(4*R_maj_H_tor^2 + 5*R_min_H_tor^2) 0 0;
+    0 (1/8)*m_ring_H*(4*R_maj_H_tor^2 + 5*R_min_H_tor^2) 0;
+    0 0 (1/4)*m_ring_H*(4*R_maj_H_tor^2 + 3*R_min_H_tor^2);
+    ];
 
+vol_ring_V = (pi*R_min_V_tor^2)*(2*pi*R_maj_V_tor);
+m_ring_V = rho*vol_ring_V;
+IvertRing_G_3 = [
+    (1/8)*m_ring_V*(4*R_maj_V_tor^2 + 5*R_min_V_tor^2) 0 0 ;
+    0 (1/4)*m_ring_V*(4*R_maj_V_tor^2 + 3*R_min_V_tor^2) 0;
+    0 0 (1/8)*m_ring_V*(4*R_maj_V_tor^2 + 5*R_min_V_tor^2);
+    ];
+
+% all in same frame and about same point, apply super pos.
 Iframe_G_3 = IvertRing_G_3 + IhoriRing_G_3 + Ipole_G_3;
 
 hframe_G_3 = Iframe_G_3*w3_3;
 
 hframe_G_3_dot = diff(hframe_G_3,t) + cross(w3_3, hframe_G_3);
+
+% sumM of Frame about G - 3 eqns - all 3 EOM once put in values for F1_3
 cross(rGO_3, F1_3) = hframe_G_3_dot;
 
 
 
+%% ROTOR NE.
 
 
-%%
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
