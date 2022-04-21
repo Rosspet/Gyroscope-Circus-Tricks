@@ -23,11 +23,12 @@ m_frame = 23; %grams
 g = 9.81;
 
 %% Rotation Matrices
-R01 = [cos(alpha) -sin(alpha) 0; sin(alpha) cos(alpha) 0; 0 0 1];
-R12 = [1 0 0; 0 cos(beta) -sin(beta); 0 sin(beta) cos(beta)];
-R23 = [cos(gamma) -sin(gamma) 0; sin(gamma) cos(gamma) 0; 0 0 1];
+syms t alpha_(t) beta_(t) gamma_(t) delta_(t)
+R01 = [cos(alpha_(t)) -sin(alpha_(t)) 0; sin(alpha_(t)) cos(alpha_(t)) 0; 0 0 1];
+R12 = [1 0 0; 0 cos(beta_(t)) -sin(beta_(t)); 0 sin(beta_(t)) cos(beta_(t))];
+R23 = [cos(gamma_(t)) -sin(gamma_(t)) 0; sin(gamma_(t)) cos(gamma_(t)) 0; 0 0 1];
 % maybe inverse direction of roation? 
-R34 = [cos(delta) -sin(delta) 0; sin(delta) cos(delta) 0 ; 0 0 1]; 
+R34 = [cos(delta_(t)) -sin(delta_(t)) 0; sin(delta_(t)) cos(delta_(t)) 0 ; 0 0 1]; 
 
 R43 = R34.';
 R21 = R12.';
@@ -36,21 +37,21 @@ R03 = R01*R12*R23;
 R30 = R03.';
 %% Angular Velocities
 
-w1_0 = [0;0;diff(alpha,t)];
+w1_0 = [0;0;diff(alpha_(t),t)];
 w1_1 = w1_0; % rotating about the same axis
 w1_2 = R21*w1_1;
 
-w21_2 = [diff(beta,t);0;0];
+w21_2 = [diff(beta_(t),t);0;0];
 w21_1 = w21_2; 
 w2_2 = w21_2 + w1_2;
 w2_3 = R32*w2_2;
 
-w32_3 = [0;0;diff(gamma,t)];
+w32_3 = [0;0;diff(gamma_(t),t)];
 w32_2 = w32_3;
 w3_3 = w32_3 + w2_3;
 w3_4 = R43*w3_3;
 
-w43_4 = [0;0;diff(delta,t)];
+w43_4 = [0;0;diff(delta_(t),t)];
 w43_3 = w43_4;
 w4_4 = w43_4 + w3_4;
 
@@ -60,7 +61,7 @@ w4_4 = w43_4 + w3_4;
 
 % FORCES
 L = (h_rod-H_rot)/2 + H_rot/2; % Looking at canvas diagram.
-rOG_4 = [0 0 L]; % z3,4 are aligneedd.
+rOG_4 = [0; 0; L]; % z3,4 are aligneedd.
 rOG_dot_4 = diff(rOG_4,t) + cross(w4_4, rOG_4);
 rOG_dot_dot_4 = diff(rOG_dot_4,t) + cross(w4_4, rOG_dot_4);
 p_rotor_dot_4 = m_rotor*rOG_dot_dot_4; % shares G with frame.
@@ -68,10 +69,11 @@ Fg_rotor_0 = [0;0;-g*m_rotor];
 Fg_rotor_3 = R30*Fg_rotor_0;
 
 p_rotor_dot_3 = R34*p_rotor_dot_4; %  into {3} as usin {3} for gyroscope frame
-F2_3 = [Fx3; Fy3; Fz3]; %force of frame on rotor in {3}
+syms F2x3 F2y3 F2z3
+F2_3 = [F2x3; F2y3; F2z3]; %force of frame on rotor in {3}
 
 % SOLVE BELOW
-p_rotor_dot_3 == Fg_rotor_3 + F2_3; % solve this
+%p_rotor_dot_3 == Fg_rotor_3 + F2_3; % solve this
 
 %% ROTOR MOMENTS 
 rotor_h = R_min_rotor*2; % height of rotor as we are modelling as cylinder not torus.
@@ -86,11 +88,12 @@ hrotor_G_dot_3 = R34*hrotor_G_dot_4;
 
 % 3 more eqns
 % SOLVE BELOW
+syms Mx3 My3 
 M_frame_on_rotor_3 = [Mx3; My3; 0];
 
 % 3 more eqns
 % SOLVE BELOW
-hrotor_G_dot_3 == M_frame_on_rotor_3;
+%hrotor_G_dot_3 == M_frame_on_rotor_3;
 
 
 %% FRAME FORCES
@@ -98,20 +101,21 @@ hrotor_G_dot_3 == M_frame_on_rotor_3;
 %volume_frame_vertical_ring = 2*pi^2*r*2*R_o;
 %volume_frame = volume_frame_vertical_ring + volume_frame_horizontal_ring;
 
-rOG_3 = [0 0 L];
+rOG_3 = [0; 0; L];
 rOG_dot_3 = diff(rOG_3,t) + cross(w3_3, rOG_3);
 rOG_dot_dot_3 = diff(rOG_dot_3,t) + cross(w3_3, rOG_dot_3);
 p_frame_dot_3 = m_frame*rOG_dot_dot_3; % RHS
 
 %LHS - do everything in {3} as p and most forces in 3 except Fg which is
 %only 1 component to convert.
-F1_3 = [Fx1_3; Fy1_3; Fz1_3]; % stand on frame 
+syms F1x3 F1y3 F1z3
+F1_3 = [F1x3; F1y3; F1z3]; % stand on frame 
 %recall F2_3 is frame on rotor, so negate to get rotor on frame.
 Fg_frame_0 = [0;0;-g*m_frame]; % gravity on frame.
 Fg_frame_3 = R30*Fg_frame_0; % gravity of frame in {3}
 
 %summation (3 Equations)
-F1_3 + Fg_frame_3 - F2_3 == p_frame_dot_3; % solve this
+% F1_3 + Fg_frame_3 - F2_3 == p_frame_dot_3; % solve this
 
 %% FRAME MOMENTS
 % going to do about G which is assume COM due to it being in the centre
@@ -123,6 +127,11 @@ F1_3 + Fg_frame_3 - F2_3 == p_frame_dot_3; % solve this
 %(currently omitting the 2 small spheres in Height for simplicity but can add later 
 % if deemed significant, i.e., non negligible.)
 vol_pole = h_rod*pi*r_rot^2;
+vol_ring_H= (pi*R_min_H_tor^2)*(2*pi*R_maj_H_tor); %google
+vol_ring_V = (pi*R_min_V_tor^2)*(2*pi*R_maj_V_tor);
+vol_frame_tot = vol_pole + vol_ring_V + vol_ring_H;
+rho = m_frame / vol_frame_tot; % finding rho.
+
 m_pole = rho*vol_pole;
 Ipole_G_3 = [(1/12)*m_pole*(3*r_rot^2+h_rod^2) 0 0; 
             0 (1/12)*m_pole*(3*r_rot^2+h_rod^2) 0 
@@ -131,7 +140,7 @@ Ipole_G_3 = [(1/12)*m_pole*(3*r_rot^2+h_rod^2) 0 0;
         
 % the ring which goes horizontally - modeled as a torus
 % rho % density of rings and pole.
-vol_ring_H= (pi*R_min_H_tor^2)*(2*pi*R_maj_H_tor); %google
+
 m_ring_H = rho*vol_ring_H;    
 IhoriRing_G_3 = [
     (1/8)*m_ring_H*(4*R_maj_H_tor^2 + 5*R_min_H_tor^2) 0 0;
@@ -139,7 +148,7 @@ IhoriRing_G_3 = [
     0 0 (1/4)*m_ring_H*(4*R_maj_H_tor^2 + 3*R_min_H_tor^2);
     ];
 
-vol_ring_V = (pi*R_min_V_tor^2)*(2*pi*R_maj_V_tor);
+
 m_ring_V = rho*vol_ring_V;
 IvertRing_G_3 = [
     (1/8)*m_ring_V*(4*R_maj_V_tor^2 + 5*R_min_V_tor^2) 0 0 ;
@@ -155,7 +164,50 @@ hframe_G_3_dot = diff(hframe_G_3,t) + cross(w3_3, hframe_G_3);
 rGO_3 = -rOG_3;
 
 % sumM of Frame about G - 3 eqns - all 3 EOM once put in values for F1_3
-cross(rGO_3, F1_3) - M_frame_on_rotor_3 == hframe_G_3_dot; % solve this
+%cross(rGO_3, F1_3) - M_frame_on_rotor_3 == hframe_G_3_dot; % solve this
+
+%% Now solving for EOMS.
+
+%% ROTOR
+% start with last link, the rotor.
+% start last link's (rotor's) forces.
+
+%p_rotor_dot_3 == Fg_rotor_3 + F2_3; % solve this for the only unkowm F2_3
+F2x3 = solve(p_rotor_dot_3(1) == Fg_rotor_3(1) + F2_3(1), F2x3);
+F2y3 = solve(p_rotor_dot_3(2) == Fg_rotor_3(2) + F2_3(2), F2y3);
+F2z3 = solve(p_rotor_dot_3(3) == Fg_rotor_3(3) + F2_3(3), F2z3);
+
+% now last links moments (rotors moments)
+
+%hrotor_G_dot_3 == M_frame_on_rotor_3; % solve this for unkown
+%M_frame_on_rotor. 
+Mx3 = solve(hrotor_G_dot_3(1) == M_frame_on_rotor_3(1), Mx3);
+My3 = solve(hrotor_G_dot_3(2) == M_frame_on_rotor_3(2), My3);
+%eom1 = solve(hrotor_G_dot_3(3) == M_frame_on_rotor_3(3))
+eom1 = hrotor_G_dot_3(3)==0; % i think? when eom1 == 0
+
+%% FRAME
+% now move onto the FRAME using what u know from the rotor.
+
+% begin with forces.
+%F1_3 + Fg_frame_3 - F2_3 == p_frame_dot_3; % solve this but now we know
+%F2_3 from the rotor! XD. only unkown is F1_3
+F1x3 = solve(F1_3(1) + Fg_frame_3(1) - F2_3(1) == p_frame_dot_3(1), F1x3);
+F1y3 = solve(F1_3(2) + Fg_frame_3(2) - F2_3(2) == p_frame_dot_3(2), F1y3);
+F1z3 = solve(F1_3(3) + Fg_frame_3(3) - F2_3(3) == p_frame_dot_3(3), F1z3);
+
+% now moments
+%cross(rGO_3, F1_3) - M_frame_on_rotor_3 == hframe_G_3_dot; % solve this
+%for unkown 
+
+% wait no the moments are 3 eom's as already solved for all unkowns!
+M_stand_on_frame = cross(rGO_3, F1_3); 
+eom2 = M_stand_on_frame(1) - M_frame_on_rotor_3(1) - hframe_G_3_dot(1) == 0;
+eom3 = M_stand_on_frame(2) - M_frame_on_rotor_3(2) - hframe_G_3_dot(2) == 0;
+eom4 = M_stand_on_frame(3) - M_frame_on_rotor_3(3) - hframe_G_3_dot(3) == 0;
+
+%% DECOUPLING
+
 
 
 
