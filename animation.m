@@ -18,7 +18,7 @@ R_min_V_tor = 1.5; %  maybe 3
 R_maj_rotor = 27; %maybe 28
 % r_rot specified in other view above
 R_min_rotor = 3.5;
-
+ 
 
 m_rotor = 45; %grams
 m_frame = 23; %grams
@@ -29,7 +29,10 @@ g = 9.81;
 R01 = [cos(alpha) -sin(alpha) 0; sin(alpha) cos(alpha) 0; 0 0 1];
 R12 = [1 0 0; 0 cos(beta) -sin(beta); 0 sin(beta) cos(beta)];
 R23 = [cos(gamma) -sin(gamma) 0; sin(gamma) cos(gamma) 0; 0 0 1];
+% maybe inverse direction of roation? 
+R34 = [cos(delta) -sin(delta) 0; sin(delta) cos(delta) 0 ; 0 0 1]; 
 
+R43 = R34.';
 R21 = R12.';
 R32 = R23.';
 R03 = R01*R12*R23;
@@ -48,6 +51,11 @@ w2_3 = R32*w2_2;
 w32_3 = [0;0;diff(gamma,t)];
 w32_2 = w32_3;
 w3_3 = w32_3 + w2_3;
+w3_4 = R43*w3_3;
+
+w43_4 = [0;0;diff(delta,t)];
+w43_3 = w43_4;
+w4_4 = w43_4 + w3_4;
 
 %% NE Equations
 
@@ -66,11 +74,11 @@ p_frame_dot_3 = m_frame*rOG_dot_dot_3; % RHS
 F1_3 = [Fx1_3; Fy1_3; Fz1_3]; % stand on frame 
 F2_3 = [Fx2_3; Fy2_3; Fz2_3]; % rotor on frame @ G.
 
-Fg_frame_0 = [0;0;-g]; % gravity on frame.
+Fg_frame_0 = [0;0;-g*m_frame]; % gravity on frame.
 Fg_frame_3 = R30*Fg_frame_0;
 
 %summation (3 Equations)
-F1_3 + Fg_frame_3 + F2_3 = p_frame_dot_3;
+F1_3 + Fg_frame_3 + F2_3 = p_frame_dot_3; % solve this
 
 % FRAME MOMENTS
 % going to do about G which is assume COM due to it being in the centre
@@ -115,22 +123,42 @@ hframe_G_3 = Iframe_G_3*w3_3;
 
 hframe_G_3_dot = diff(hframe_G_3,t) + cross(w3_3, hframe_G_3);
 
+M2_3 = [Mx3; My3; 0]; % moment of rotor on on frame
+
 % sumM of Frame about G - 3 eqns - all 3 EOM once put in values for F1_3
-cross(rGO_3, F1_3) = hframe_G_3_dot;
+cross(rGO_3, F1_3) + M2_3 = hframe_G_3_dot; % solve this
 
 
 
 %% ROTOR NE.
 
+% FORCES
+rOG_4 = [0 0 L]; % z3,4 are aligneedd.
+rOG_dot_4 = diff(rOG_4,t) + cross(w4_4, rOG_4);
+rOG_dot_dot_4 = diff(rOG_dot_4,t) + cross(w4_4, rOG_dot_4);
+p_rotor_dot_4 = m_rotor*rOG_dot_dot_4; % same G as frame.
+Fg_rotor_0 = [0;0;-g*m_rotor];
+Fg_rotor_3 = R30*Fg_rotor_0;
 
+p_rotor_dot_3 = R34*p_rotor_dot_4
 
+% 3 more eqns
+% does it need to be done in {4} then rotated out? YES
+p_rotor_dot_3 == Fg_rotor_3 - F2_3; % solve this
 
+% MOMENTS
+rotor_h = R_min_rotor*2; % height of rotor as we are modelling as cylinder not torus.
+Irotor_G_4 = [
+    (1/12)*m_rotor*(3*R_maj_rotor^2+rotor_h^2) 0 0;
+    0 (1/12)*m_rotor*(3*R_maj_rotor^2+rotor_h^2) 0;
+    0 0 (1/2)*m_rotor*R_maj_rotor^2;
+    ];
+hrotor_G_4 = Irotor_G_4*w4_4;
+hrotor_G_4_dot = diff(hrotor_G_4,t) + cross(w4_4, hrotor_G_4);
+hrotor_G_3_dot = R34*hrotor_G_4_dot;
 
-
-
-
-
-
+% 3 more eqns
+hrotor_G_3_dot == -M2_3;
 
 
 
