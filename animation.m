@@ -37,21 +37,21 @@ R03 = R01*R12*R23;
 R30 = R03.';
 %% Angular Velocities
 
-w1_0 = [0;0;diff(alpha_(t),t)];
+w1_0 = [0;0;diff(alpha_,t)];
 w1_1 = w1_0; % rotating about the same axis
 w1_2 = R21*w1_1;
 
-w21_2 = [diff(beta_(t),t);0;0];
+w21_2 = [diff(beta_,t);0;0];
 w21_1 = w21_2; 
 w2_2 = w21_2 + w1_2;
 w2_3 = R32*w2_2;
 
-w32_3 = [0;0;diff(gamma_(t),t)];
+w32_3 = [0;0;diff(gamma_,t)];
 w32_2 = w32_3;
 w3_3 = w32_3 + w2_3;
 w3_4 = R43*w3_3;
 
-w43_4 = [0;0;diff(delta_(t),t)];
+w43_4 = [0;0;diff(delta_,t)];
 w43_3 = w43_4;
 w4_4 = w43_4 + w3_4;
 
@@ -173,41 +173,65 @@ rGO_3 = -rOG_3;
 % start last link's (rotor's) forces.
 
 %p_rotor_dot_3 == Fg_rotor_3 + F2_3; % solve this for the only unkowm F2_3
-F2x3 = solve(p_rotor_dot_3(1) == Fg_rotor_3(1) + F2_3(1), F2x3);
-F2y3 = solve(p_rotor_dot_3(2) == Fg_rotor_3(2) + F2_3(2), F2y3);
-F2z3 = solve(p_rotor_dot_3(3) == Fg_rotor_3(3) + F2_3(3), F2z3);
+[F2x3, F2y3, F2z3] = solve(p_rotor_dot_3 == Fg_rotor_3 + F2_3, F2x3, F2y3, F2z3);
+
+% F2x3 = solve(p_rotor_dot_3(1) == Fg_rotor_3(1) + F2_3(1), F2x3);
+% F2y3 = solve(p_rotor_dot_3(2) == Fg_rotor_3(2) + F2_3(2), F2y3);
+% F2z3 = solve(p_rotor_dot_3(3) == Fg_rotor_3(3) + F2_3(3), F2z3);
 
 % now last links moments (rotors moments)
 
 %hrotor_G_dot_3 == M_frame_on_rotor_3; % solve this for unkown
 %M_frame_on_rotor. 
-Mx3 = solve(hrotor_G_dot_3(1) == M_frame_on_rotor_3(1), Mx3);
-My3 = solve(hrotor_G_dot_3(2) == M_frame_on_rotor_3(2), My3);
+
+%Mx3 = solve(hrotor_G_dot_3(1) == M_frame_on_rotor_3(1), Mx3);
+%My3 = solve(hrotor_G_dot_3(2) == M_frame_on_rotor_3(2), My3);
 %eom1 = solve(hrotor_G_dot_3(3) == M_frame_on_rotor_3(3))
-eom1 = hrotor_G_dot_3(3)==0; % i think? when eom1 == 0
+%eom1 = hrotor_G_dot_3(3)==0; % i think? when eom1 == 0
 
 %% FRAME
 % now move onto the FRAME using what u know from the rotor.
 
-% begin with forces.
-%F1_3 + Fg_frame_3 - F2_3 == p_frame_dot_3; % solve this but now we know
-%F2_3 from the rotor! XD. only unkown is F1_3
-F1x3 = solve(F1_3(1) + Fg_frame_3(1) - F2_3(1) == p_frame_dot_3(1), F1x3);
-F1y3 = solve(F1_3(2) + Fg_frame_3(2) - F2_3(2) == p_frame_dot_3(2), F1y3);
-F1z3 = solve(F1_3(3) + Fg_frame_3(3) - F2_3(3) == p_frame_dot_3(3), F1z3);
+% % begin with forces.
+% %F1_3 + Fg_frame_3 - F2_3 == p_frame_dot_3; % solve this but now we know
+% %F2_3 from the rotor! XD. only unkown is F1_3
+% F1x3 = solve(F1_3(1) + Fg_frame_3(1) - F2_3(1) == p_frame_dot_3(1), F1x3);
+% F1y3 = solve(F1_3(2) + Fg_frame_3(2) - F2_3(2) == p_frame_dot_3(2), F1y3);
+% F1z3 = solve(F1_3(3) + Fg_frame_3(3) - F2_3(3) == p_frame_dot_3(3), F1z3);
+% 
+% % now moments
+% %cross(rGO_3, F1_3) - M_frame_on_rotor_3 == hframe_G_3_dot; % solve this
+% %for unkown 
+% 
+% % wait no the moments are 3 eom's as already solved for all desired unkowns!
+% M_stand_on_frame = cross(rGO_3, F1_3); 
+% eom2 = M_stand_on_frame(1) - M_frame_on_rotor_3(1) - hframe_G_3_dot(1) == 0;
+% eom3 = M_stand_on_frame(2) - M_frame_on_rotor_3(2) - hframe_G_3_dot(2) == 0;
+% eom4 = M_stand_on_frame(3) - M_frame_on_rotor_3(3) - hframe_G_3_dot(3) == 0;
 
-% now moments
-%cross(rGO_3, F1_3) - M_frame_on_rotor_3 == hframe_G_3_dot; % solve this
-%for unkown 
-
-% wait no the moments are 3 eom's as already solved for all unkowns!
-M_stand_on_frame = cross(rGO_3, F1_3); 
-eom2 = M_stand_on_frame(1) - M_frame_on_rotor_3(1) - hframe_G_3_dot(1) == 0;
-eom3 = M_stand_on_frame(2) - M_frame_on_rotor_3(2) - hframe_G_3_dot(2) == 0;
-eom4 = M_stand_on_frame(3) - M_frame_on_rotor_3(3) - hframe_G_3_dot(3) == 0;
-
-%% DECOUPLING
-
-
-
+% %% DECOUPLING
+% EOM = [eom1, eom2, eom3, eom4]; 
+% % syms alpha_dot_dot_(t) beta_dot_dot_(t) gamma_dot_dot_(t) delta_dot_dot_(t)
+% % alpha_dot_dot = diff(alpha_(t),t,t);
+% % beta_dot_dot = diff(beta_(t),t,t);
+% % gamma_dot_dot = diff(gamma_(t),t,t);
+% % delta_dot_dot = diff(delta_(t),t,t);
+% syms alpha_dot_(t) beta_dot_(t) gamma_dot_(t) delta_dot_(t)
+% alpha_dot_ = diff(alpha_,t);
+% beta_dot_ = diff(beta_,t);
+% gamma_dot_ = diff(gamma_,t);
+% delta_dot_ = diff(delta_,t);
+% 
+% vars = [alpha_(t), beta_(t), gamma_(t), delta_(t), ... 
+%     alpha_dot_(t), beta_dot_(t), gamma_dot_(t), delta_dot_(t)];
+% 
+% [A,b] = equationsToMatrix(EOM, vars); 
+% 
+% %[A,b] = equationsToMatrix(EOM, [alpha_, beta_, gamma_, delta_, ... 
+% %    diff(alpha_(t),t), diff(beta_(t),t), diff(alpha_(t),t), diff(alpha_(t),t)]); 
+% 
+% A
+% b
+% 
+% 
 
