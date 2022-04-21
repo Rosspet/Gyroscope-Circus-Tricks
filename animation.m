@@ -220,19 +220,21 @@ M_standOnFrame_x3=0; M_standOnFrame_y3=0; M_standOnFrame_z3=0; % they're actuall
 %gamma_dot_(t) = diff(gamma_(t),t);
 %delta_dot_(t) = diff(delta_(t),t); 
 % 
-% syms alpha_dot_dot_(t) beta_dot_dot_(t) gamma_dot_dot_(t) delta_dot_dot_(t)
-% alpha_dot_dot_ = diff(alpha_(t),t,t);
-% beta_dot_dot_ = diff(beta_(t),t,t);
-% gamma_dot_dot_ = diff(gamma_(t),t,t);
-% delta_dot_dot_ = diff(delta_(t),t,t);
+syms alpha_dot_dot_(t) beta_dot_dot_(t) gamma_dot_dot_(t) delta_dot_dot_(t)
+alpha_dot_dot_(t) = diff(alpha_(t),t,t);
+beta_dot_dot_(t) = diff(beta_(t),t,t);
+gamma_dot_dot_(t) = diff(gamma_(t),t,t);
+delta_dot_dot_(t) = diff(delta_(t),t,t);
 
 
 
 EOM = [eom1, eom2, eom3, eom4]; 
-%vars = [alpha_dot_dot_, beta_dot_dot_, gamma_dot_dot_, delta_dot_dot_];
+vars = [alpha_dot_dot_, beta_dot_dot_, gamma_dot_dot_, delta_dot_dot_];
+vars = [alpha_dot_dot_(t), beta_dot_dot_(t), gamma_dot_dot_(t), delta_dot_dot_(t)];
 %vars = [diff(alpha_(t),t,t), diff(beta_(t),t,t), diff(gamma_(t),t,t), diff(delta_(t),t,t)];
 %vars = [diff(alpha_,t,t), diff(beta_,t,t), diff(gamma_,t,t), diff(delta_,t,t)];
-[A,b] = equationsToMatrix(EOM, [diff(alpha_,t,t), diff(beta_,t,t), diff(gamma_,t,t), diff(delta_,t,t)]);
+%[A,b] = equationsToMatrix(EOM, [diff(alpha_,t,t), diff(beta_,t,t), diff(gamma_,t,t), diff(delta_,t,t)]);
+[A,b] = equationsToMatrix(EOM, vars);
 A
 b
 
