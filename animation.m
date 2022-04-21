@@ -2,8 +2,6 @@ clc
 clear all 
 close all
 
-
-
 %% Measuremeants (in mm)
 h_rod = 87;  % 93 - 2*3 % maybe include the little shperes.
 H_rot = 59; % 65  - 2*R_min_V_tor
@@ -18,7 +16,6 @@ R_min_V_tor = 1.5; %  maybe 3
 R_maj_rotor = 27; %maybe 28
 % r_rot specified in other view above
 R_min_rotor = 3.5;
- 
 
 m_rotor = 45; %grams
 m_frame = 23; %grams
@@ -72,6 +69,7 @@ Fg_rotor_3 = R30*Fg_rotor_0;
 
 p_rotor_dot_3 = R34*p_rotor_dot_4; %  into {3} as usin {3} for gyroscope frame
 F2_3 = [Fx3; Fy3; Fz3]; %force of frame on rotor in {3}
+
 % SOLVE BELOW
 p_rotor_dot_3 == Fg_rotor_3 + F2_3; % solve this
 
@@ -158,25 +156,6 @@ rGO_3 = -rOG_3;
 
 % sumM of Frame about G - 3 eqns - all 3 EOM once put in values for F1_3
 cross(rGO_3, F1_3) - M_frame_on_rotor_3 == hframe_G_3_dot; % solve this
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
