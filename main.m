@@ -5,7 +5,9 @@ clc;
 clear all;
 close all;
 
-%% Generate Simulation
+%% User Inputs
+
+REC = 0;
 
 al = 0;
 be = 0;
@@ -15,6 +17,8 @@ al_d = 0;
 be_d = 0;
 ga_d = 0;
 de_d = 10*pi;
+
+%% Generate Simulation
 
 X_init = [al,be,ga,de,al_d,be_d,ga_d,de_d]; 
 tspan = [0 1]; % simulation period
@@ -51,7 +55,6 @@ h2 = legend('$\dot{\alpha}$','$\dot{\beta}$','$\dot{\gamma}$','$\dot{\delta}$');
 set(h2,'Interpreter','latex');
 
 %% Display Animation
-REC = 0;
 
 if REC
     sim = subplot(2, 3, [1,2,3,4,5,6]);
