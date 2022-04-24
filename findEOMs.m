@@ -1,22 +1,8 @@
-clear all
-close all
-clc
+clc;
+close all;
+clear all;
 
-%% Measuremeants (in mm)
-h_rod = 87;  % 93 - 2*3 % maybe include the little shperes.
-H_rot = 59; % 65  - 2*R_min_V_tor
-R_sph = 2; % 4 accros but 3 high. (R is half)
-R_maj_V_tor = 59/2 + 1.5 ; % h_rot / 2 + R_min_V_tor
-R_maj_H_tor = 64; % = 68 - 2*R_min_H_tor % IS THIS MEANT TO BE /2 SO 32? OR /2 of 68 then the subtraction
-r_rot = 2 ;
-R_min_H_tor = 1; % maybe 2 for radius
-R_min_V_tor = 1.5; %  maybe 3
-R_maj_rotor = 27; %maybe 28
-% r_rot specified in other view above
-R_min_rotor = 3.5;
-m_rotor = 45; %grams
-m_frame = 23; %grams
-gravity = 9.81;
+measurements
 
 %% Rotation Matrices
 syms t alpha_(t) beta_(t) gamma_(t) delta_(t)
@@ -31,6 +17,7 @@ R21 = R12.';
 R32 = R23.';
 R03 = R01*R12*R23;
 R30 = R03.';
+
 %% Angular Velocities
 
 w1_0 = [0;0;diff(alpha_,t)];
@@ -199,29 +186,30 @@ eom4 = M_standOnFrame_z3==0;
 M_standOnFrame_x3=0; M_standOnFrame_y3=0; M_standOnFrame_z3=0; % they're actually zero. not that it matters for rrest of code.
 
  %% DECOUPLING
-syms a b g d % is this g conflicting with gravity - not anymore, changed g for gravity to "gravity"
-syms alpha_dot beta_dot gamma_dot delta_dot
-syms alpha_dot_dot beta_dot_dot gamma_dot_dot delta_dot_dot
+syms al be ga de % is this g conflicting with gravity - not anymore, changed g for gravity to "gravity"
+syms al_d be_d ga_d de_d
+syms al_dd be_dd ga_dd de_dd
 
 eom1 = subs(eom1, [alpha_, beta_, gamma_, delta_,  diff(alpha_,t), diff(beta_,t), diff(gamma_, t), diff(delta_,t), diff(alpha_,t, t), diff(beta_,t, t), diff(gamma_, t, t), diff(delta_,t, t) ], ...
-    [a, b, g, d, alpha_dot, beta_dot, gamma_dot, delta_dot, alpha_dot_dot, beta_dot_dot, gamma_dot_dot, delta_dot_dot ]);
+    [al, be, ga, de, al_d, be_d, ga_d, de_d, al_dd, be_dd, ga_dd, de_dd]);
 
 eom2 = subs(eom2, [alpha_, beta_, gamma_, delta_, diff(alpha_,t), diff(beta_,t), diff(gamma_, t), diff(delta_,t), diff(alpha_,t, t), diff(beta_,t, t), diff(gamma_, t, t), diff(delta_,t, t) ], ...
-    [a, b, g, d, alpha_dot, beta_dot, gamma_dot, delta_dot, alpha_dot_dot, beta_dot_dot, gamma_dot_dot, delta_dot_dot ]);
+    [al, be, ga, de, al_d, be_d, ga_d, de_d, al_dd, be_dd, ga_dd, de_dd]);
 
 eom3 = subs(eom3, [alpha_, beta_, gamma_, delta_, diff(alpha_,t), diff(beta_,t), diff(gamma_, t), diff(delta_,t), diff(alpha_,t, t), diff(beta_,t, t), diff(gamma_, t, t), diff(delta_,t, t) ], ...
-    [a, b, g, d, alpha_dot, beta_dot, gamma_dot, delta_dot, alpha_dot_dot, beta_dot_dot, gamma_dot_dot, delta_dot_dot ]);
+    [al, be, ga, de, al_d, be_d, ga_d, de_d, al_dd, be_dd, ga_dd, de_dd]);
 
 eom4 = subs(eom4, [alpha_, beta_, gamma_, delta_, diff(alpha_,t), diff(beta_,t), diff(gamma_, t), diff(delta_,t), diff(alpha_,t, t), diff(beta_,t, t), diff(gamma_, t, t), diff(delta_,t, t) ], ...
-    [a, b, g, d, alpha_dot, beta_dot, gamma_dot, delta_dot, alpha_dot_dot, beta_dot_dot, gamma_dot_dot, delta_dot_dot ]);
-
+    [al, be, ga, de, al_d, be_d, ga_d, de_d, al_dd, be_dd, ga_dd, de_dd]);
 
 EOM = [eom1, eom2, eom3, eom4]; 
-vars = [alpha_dot_dot, beta_dot_dot, gamma_dot_dot, delta_dot_dot];
+vars = [al_dd, be_dd, ga_dd, de_dd];
 
 [A,b] = equationsToMatrix(EOM, vars);
 % A should be an identity matrix?
-alpha_dd = b(1);
-beta_dd = b(2);
-gamma_dd = b(3);
-delta_dd = b(4);
+al_dd = simplify(b(1));
+be_dd = simplify(b(2));
+ga_dd = simplify(b(3));
+de_dd = simplify(b(4));
+
+clearvars -except al_dd be_dd ga_dd de_dd

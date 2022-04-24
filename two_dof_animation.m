@@ -1,9 +1,9 @@
-jfunction two_dof_animation()
+function two_dof_animation()
     clear all
     close all
     clc
     %% DO I WANT TO RECORD THE VIDEO
-    VIDEO = 1;
+    VIDEO = 0;
     
     %% SETUP THE PROBLEM
     X_init = [0;pi/3;10;0];                         % initial conditions

@@ -1,28 +1,31 @@
 function Xdot = getXdot(t, X)
 
-a = x(1);
-b = x(2);
-g = x(3);
-d = x(4);
-alpha_dot = x(5);
-beta_dot = x(6);
-gamma_dot = x(7);
-delta_dot = x(8);
-
-h1 = (cos(d)*(beta_dot*cos(g) + alpha_dot*sin(b)*sin(g)) - sin(d)*(beta_dot*sin(g) - alpha_dot*cos(g)*sin(b)))*(8385*cos(d)*(beta_dot*sin(g) - alpha_dot*cos(g)*sin(b)) + 8385*sin(d)*(beta_dot*cos(g) + alpha_dot*sin(b)*sin(g))) - (cos(d)*(beta_dot*sin(g) - alpha_dot*cos(g)*sin(b)) + sin(d)*(beta_dot*cos(g) + alpha_dot*sin(b)*sin(g)))*(8385*cos(d)*(beta_dot*cos(g) + alpha_dot*sin(b)*sin(g)) - 8385*sin(d)*(beta_dot*sin(g) - alpha_dot*cos(g)*sin(b))) + 1.6402e+04*alpha_dot*beta_dot*sin(b);
-h2 = (3.5985e+04*gamma_dot + 3.5985e+04*alpha_dot*cos(b))*(beta_dot*sin(g) - alpha_dot*cos(g)*sin(b)) - (2.8364e+04*beta_dot*sin(g) - 2.8364e+04*alpha_dot*cos(g)*sin(b))*(gamma_dot + alpha_dot*cos(b)) + 2.9018e+04*cos(g)*sin(b) + 2.4286e+04*beta_dot*gamma_dot*sin(g) + 1.6402e+04*beta_dot*delta_dot*cos(d)^2*sin(g) + 1.6402e+04*beta_dot*gamma_dot*cos(d)^2*sin(g) + 1.6402e+04*beta_dot*delta_dot*sin(d)^2*sin(g) + 1.6402e+04*beta_dot*gamma_dot*sin(d)^2*sin(g) + 4.3522e+04*alpha_dot^2*cos(b)*cos(g)*sin(b) - 1.1133e+05*alpha_dot*beta_dot*cos(b)*sin(g) - 2.4286e+04*alpha_dot*gamma_dot*cos(g)*sin(b) + 7.7134e+04*alpha_dot^2*cos(b)*cos(d)^2*cos(g)*sin(b) + 7.7134e+04*alpha_dot^2*cos(b)*cos(g)*sin(b)*sin(d)^2 - 170670*alpha_dot*beta_dot*cos(b)*cos(d)^2*sin(g) - 1.6402e+04*alpha_dot*delta_dot*cos(d)^2*cos(g)*sin(b) - 1.6402e+04*alpha_dot*gamma_dot*cos(d)^2*cos(g)*sin(b) - 170670*alpha_dot*beta_dot*cos(b)*sin(d)^2*sin(g) - 1.6402e+04*alpha_dot*delta_dot*cos(g)*sin(b)*sin(d)^2 - 1.6402e+04*alpha_dot*gamma_dot*cos(g)*sin(b)*sin(d)^2;
-h3 = (3.5985e+04*gamma_dot + 3.5985e+04*alpha_dot*cos(b))*(beta_dot*cos(g) + alpha_dot*sin(b)*sin(g)) - (2.4286e+04*beta_dot*cos(g) + 2.4286e+04*alpha_dot*sin(b)*sin(g))*(gamma_dot + alpha_dot*cos(b)) - 2.9018e+04*sin(b)*sin(g) + 2.8364e+04*beta_dot*gamma_dot*cos(g) + 1.6402e+04*beta_dot*delta_dot*cos(d)^2*cos(g) + 1.6402e+04*beta_dot*gamma_dot*cos(d)^2*cos(g) + 1.6402e+04*beta_dot*delta_dot*cos(g)*sin(d)^2 + 1.6402e+04*beta_dot*gamma_dot*cos(g)*sin(d)^2 - 4.3522e+04*alpha_dot^2*cos(b)*sin(b)*sin(g) - 1.1541e+05*alpha_dot*beta_dot*cos(b)*cos(g) + 2.8364e+04*alpha_dot*gamma_dot*sin(b)*sin(g) + 1.6402e+04*alpha_dot*delta_dot*sin(b)*sin(d)^2*sin(g) + 1.6402e+04*alpha_dot*gamma_dot*sin(b)*sin(d)^2*sin(g) - 7.7134e+04*alpha_dot^2*cos(b)*cos(d)^2*sin(b)*sin(g) - 7.7134e+04*alpha_dot^2*cos(b)*sin(b)*sin(d)^2*sin(g) - 170670*alpha_dot*beta_dot*cos(b)*cos(d)^2*cos(g) - 170670*alpha_dot*beta_dot*cos(b)*cos(g)*sin(d)^2 + 1.6402e+04*alpha_dot*delta_dot*cos(d)^2*sin(b)*sin(g) + 1.6402e+04*alpha_dot*gamma_dot*cos(d)^2*sin(b)*sin(g);
-h4 = (2.8364e+04*beta_dot*sin(g) - 2.8364e+04*alpha_dot*cos(g)*sin(b))*(beta_dot*cos(g) + alpha_dot*sin(b)*sin(g)) - (2.4286e+04*beta_dot*cos(g) + 2.4286e+04*alpha_dot*sin(b)*sin(g))*(beta_dot*sin(g) - alpha_dot*cos(g)*sin(b)) + 5.2388e+04*alpha_dot*beta_dot*sin(b);
-
-Xdot = [
-    alpha_dot;
-    beta_dot;
-    gamma_dot;
-    delta_dot;
-    h1;
-    h2;
-    h3;
-    h4;
-    ];
+    % Extract values for iteration
+    al = X(1);
+    be = X(2);
+    ga = X(3);
+    de = X(4);
+    al_d = X(5);
+    be_d = X(6);
+    ga_d = X(7);
+    de_d = X(8);
+    
+    % Solve for second derivatives - equations from findEOMs
+    al_dd = (2420581757352167*al_d*be_d*sin(be))/147573952589676412928;
+    be_dd = (1450899*cos(ga)*sin(be))/50000000 + (2420581757352167*be_d*de_d*sin(ga))/147573952589676412928 + (891153834074247*be_d*ga_d*sin(ga))/18446744073709551616 + (32580100932079679845087*al_d^2*cos(be)*cos(ga)*sin(be))/288230376151711744000000000 - (39542240260784734532587*al_d*be_d*cos(be)*sin(ga))/144115188075855872000000000 - (2420581757352167*al_d*de_d*cos(ga)*sin(be))/147573952589676412928 - (891153834074247*al_d*ga_d*cos(ga)*sin(be))/18446744073709551616;
+    ga_dd = (2420581757352167*be_d*de_d*cos(ga))/147573952589676412928 - (1450899*sin(be)*sin(ga))/50000000 + (4166419603654503*be_d*ga_d*cos(ga))/73786976294838206464 - (3925587746549629170089*al_d^2*cos(be)*sin(be)*sin(ga))/36028797018963968000000000 - (39542240260784734532587*al_d*be_d*cos(be)*cos(ga))/144115188075855872000000000 + (2420581757352167*al_d*de_d*sin(be)*sin(ga))/147573952589676412928 + (4166419603654503*al_d*ga_d*sin(be)*sin(ga))/73786976294838206464;
+    de_dd = (601804267357515*be_d^2*cos(ga)*sin(ga))/147573952589676412928 + (7731034939951491*al_d*be_d*sin(be))/147573952589676412928 - (601804267357515*al_d*be_d*cos(ga)^2*sin(be))/147573952589676412928 + (601804267357515*al_d*be_d*sin(be)*sin(ga)^2)/147573952589676412928 - (601804267357515*al_d^2*cos(ga)*sin(be)^2*sin(ga))/147573952589676412928;
+ 
+    % Store output
+    Xdot = [
+        al_d;
+        be_d;
+        ga_d;
+        de_d;
+        al_dd;
+        be_dd;
+        ga_dd;
+        de_dd;
+        ];
 
 end
