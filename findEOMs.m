@@ -206,10 +206,16 @@ EOM = [eom1, eom2, eom3, eom4];
 vars = [al_dd, be_dd, ga_dd, de_dd];
 
 [A,b] = equationsToMatrix(EOM, vars);
-% A should be an identity matrix?
-al_dd = simplify(b(1));
-be_dd = simplify(b(2));
-ga_dd = simplify(b(3));
-de_dd = simplify(b(4));
+X = A\b;
+al_dd = simplify(X(1));
+be_dd = simplify(X(2));
+ga_dd = simplify(X(3));
+de_dd = simplify(X(4));
 
-clearvars -except al_dd be_dd ga_dd de_dd
+% A should be an identity matrix? suppose to do A\b (see wk8 lect)
+% al_dd = simplify(b(1));
+% be_dd = simplify(b(2));
+% ga_dd = simplify(b(3));
+% de_dd = simplify(b(4));
+
+clearvars -except al_dd be_dd ga_dd de_dd X
