@@ -6,11 +6,11 @@ measurements
 
 %% Rotation Matrices
 syms t alpha_(t) beta_(t) gamma_(t) delta_(t)
-R01 = [cos(alpha_(t)) -sin(alpha_(t)) 0; sin(alpha_(t)) cos(alpha_(t)) 0; 0 0 1];
-R12 = [1 0 0; 0 cos(beta_(t)) -sin(beta_(t)); 0 sin(beta_(t)) cos(beta_(t))];
-R23 = [cos(gamma_(t)) -sin(gamma_(t)) 0; sin(gamma_(t)) cos(gamma_(t)) 0; 0 0 1];
+R01 = [cos(alpha_) -sin(alpha_) 0; sin(alpha_) cos(alpha_) 0; 0 0 1];
+R12 = [1 0 0; 0 cos(beta_) -sin(beta_); 0 sin(beta_) cos(beta_)];
+R23 = [cos(gamma_) -sin(gamma_) 0; sin(gamma_) cos(gamma_) 0; 0 0 1];
 % maybe inverse direction of roation? 
-R34 = [cos(delta_(t)) -sin(delta_(t)) 0; sin(delta_(t)) cos(delta_(t)) 0 ; 0 0 1]; 
+R34 = [cos(delta_) -sin(delta_) 0; sin(delta_) cos(delta_) 0 ; 0 0 1]; 
 
 R43 = R34.';
 R21 = R12.';
@@ -137,7 +137,7 @@ rGO_3 = -rOG_3;
 % start last link's (rotor's) forces.
 syms F2x3 F2y3 F2z3
 F2_3 = [F2x3; F2y3; F2z3]; %force of frame on rotor in {3}
-[F2x3, F2y3, F2z3] = solve(p_rotor_dot_3 == Fg_rotor_3 + F2_3, F2x3, F2y3, F2z3);
+[F2x3, F2y3, F2z3] = solve(p_rotor_dot_3 == Fg_rotor_3 + F2_3 , F2x3, F2y3, F2z3);
 
 f2x3 = expand(F2x3);
 f2y3 = expand(F2y3);
@@ -174,7 +174,7 @@ f1_3 = [f1x3; f1y3; f1z3];
 m_stand_on_frame_from_forces = cross(rGO_3, f1_3); % these are the moments on the gyro made BY THE FORCES of the stand, which are not 0.
 syms M_standOnFrame_x3 M_standOnFrame_y3 M_standOnFrame_z3 % make these dummies to solve for. they sillve be set to zero later of course sincce the stand only supplies forces.
 M_stand_on_frame = [M_standOnFrame_x3; M_standOnFrame_y3; M_standOnFrame_z3]; % these are the constraint moments from the stand on the gyro, they're all set to 0 later ofc.
-[M_standOnFrame_x3, M_standOnFrame_y3, M_standOnFrame_z3] = solve(M_stand_on_frame + m_stand_on_frame_from_forces - m_frame_on_rotor_3 - hframe_G_3_dot == 0 ...
+[M_standOnFrame_x3, M_standOnFrame_y3, M_standOnFrame_z3] = solve(M_stand_on_frame + m_stand_on_frame_from_forces - m_frame_on_rotor_3 == hframe_G_3_dot  ...
     , M_standOnFrame_x3, M_standOnFrame_y3, M_standOnFrame_z3);
 
 % not getting non symbolics for the solved moments as they arent, used
@@ -208,9 +208,9 @@ vars = [al_dd, be_dd, ga_dd, de_dd];
 [A,b] = equationsToMatrix(EOM, vars);
 X = A\b;
 al_dd = simplify(X(1));
-be_dd = simplify(X(2));
-ga_dd = simplify(X(3));
-de_dd = simplify(X(4));
+be_dd = simplify(X(2))
+ga_dd = simplify(X(3))
+de_dd = simplify(X(4))
 
 % A should be an identity matrix? suppose to do A\b (see wk8 lect)
 % al_dd = simplify(b(1));

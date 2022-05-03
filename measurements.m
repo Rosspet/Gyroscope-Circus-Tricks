@@ -14,7 +14,6 @@ R_maj_rotor = 27/1000; % maybe 28
 R_min_rotor = 3.5/1000;
 
 %% Mass (in kg)
-
 m_rotor = 45/1000; 
 m_frame = 23/1000;
 gravity = 9.81;
