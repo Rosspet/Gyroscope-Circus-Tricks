@@ -10,7 +10,7 @@ function animateGyro(t, X, dt, fig, REC, vtitle)
     r = R_min_V_tor;
     
     % Rotor
-    h = 2*R_min_rotor;
+    Rr = R_min_rotor;
     Ri = R_maj_rotor;
     
     offset = H/2+R_sph;
@@ -46,8 +46,10 @@ function animateGyro(t, X, dt, fig, REC, vtitle)
     z_bsph = z_tsph-H;
     
     % Generate rotor outside 
-    [x_rot, y_rot, z_rot] = cylinder(Ri, 100);
-    z_rot = z_rot*h-h/2+offset;
+
+    x_rot = (Rr+Ri.*cos(phi)).*cos(theta);
+    y_rot = (Rr+Ri.*cos(phi)).*sin(theta);
+    z_rot = Ri.*sin(phi)+offset;
     
     % Generate rotor top and bottom
     % https://au.mathworks.com/matlabcentral/answers/308311-how-to-surf-over-a-circular-domain
@@ -58,11 +60,7 @@ function animateGyro(t, X, dt, fig, REC, vtitle)
     
     x_trot = Ri_m.*cos(theta);
     y_trot = Ri_m.*sin(theta);
-    z_trot = h/2.*ones(size(x_trot))+offset;
-    
-    x_brot = x_trot;
-    y_brot = y_trot;
-    z_brot = -h/2.*ones(size(x_brot))+offset;
+    z_trot = zeros(size(x_trot))+offset;
     
     %% SETUP VIDEO IF REQUIRED
     if REC
@@ -110,7 +108,6 @@ function animateGyro(t, X, dt, fig, REC, vtitle)
         % Rotate Rotor
         [x_rot_r, y_rot_r, z_rot_r] = rotateGyro(x_rot, y_rot, z_rot, R_rotor);
         [x_trot_r, y_trot_r, z_trot_r] = rotateGyro(x_trot, y_trot, z_trot, R_rotor);
-        [x_brot_r, y_brot_r, z_brot_r] = rotateGyro(x_brot, y_brot, z_brot, R_rotor);
     
         % Display Frame
         surf(x_htor_r, y_htor_r, z_htor_r, x_htor, 'EdgeColor','none','FaceColor','Interp', 'FaceLighting', 'gouraud');
@@ -122,7 +119,6 @@ function animateGyro(t, X, dt, fig, REC, vtitle)
         % Display Rotor
         surf(x_rot_r, y_rot_r, z_rot_r, x_rot, 'EdgeColor','none','FaceColor', 'Interp', 'FaceLighting', 'gouraud');
         surf(x_trot_r, y_trot_r, z_trot_r, x_trot, 'EdgeColor','none','FaceColor', 'Interp', 'FaceLighting', 'gouraud');
-        surf(x_brot_r, y_brot_r, z_brot_r, x_brot, 'EdgeColor','none','FaceColor', 'Interp', 'FaceLighting', 'gouraud');
     
         % Display Settings
         light('Position',[1 1 2],'Style','local');   

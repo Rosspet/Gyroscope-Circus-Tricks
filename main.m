@@ -7,16 +7,21 @@ close all;
 
 %% User Inputs
 
-REC = 1;
+REC = 0;
 
 al = pi/4;
 be = pi/4;
 ga = pi/4;
 de = 0;
-al_d = 3;
-be_d = 6;
-ga_d = 7;
-de_d = 10*pi;
+al_d = 0;
+be_d = 0;
+ga_d = 0;
+de_d = 0;
+
+% al_d = 3;
+% be_d = 6;
+% ga_d = 7;
+% de_d = 10*pi;
 
 %% Generate Simulation
 
