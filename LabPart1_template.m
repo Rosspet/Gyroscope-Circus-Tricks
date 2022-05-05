@@ -37,12 +37,8 @@ v_ring_V = (pi*R_min_V_tor^2)*(2*pi*R_maj_V_tor);
 v_rod_frame = (h_rod-H_rot)*pi*r_rot^2;
 v_T = v_ring_V+v_ring_H;
 
-rho_init = m_frame/(v_T+v_rod_frame)
-m_rod_frame = rho_init*v_rod_frame;
+rho_T = m_frame/(v_T+v_rod_frame);
 
-m_frame = m_frame-m_rod_frame;
-rho_T = m_frame/v_T;                             
-              
 %%%%%% Rotor %%%%%
 
 % Desity of the rotor [kg/m^3] (Pretest).
@@ -241,87 +237,90 @@ ang_NE_frame = hGframe_3_dot == Mframe_3 - Mrotor_3 + cross(rGO_3, Fframe_3);
 % Remove comment of the next line once you have all the above equations and delete the last line with the zeros
 %equations = [zero_reaction; lin_NE_rotor; lin_NE_frame; ang_NE_rotor; ang_NE_frame];
 
-% syms al be ga de % is this g conflicting with gravity - not anymore, changed g for gravity to "gravity"
-% syms al_d be_d ga_d de_d
-% syms al_dd be_dd ga_dd de_dd
+equations = [zero_reaction; lin_NE_rotor; lin_NE_frame; ang_NE_rotor; ang_NE_frame];
+
+
+syms al be ga de % is this g conflicting with gravity - not anymore, changed g for gravity to "gravity"
+syms al_d be_d ga_d de_d
+syms al_dd be_dd ga_dd de_dd
+
+syms T
+
+%ang_NE_rotor = ang_NE_rotor(T);
+
+ang_NE_rotor_EQN = subs(ang_NE_rotor, [alpha_, beta_, gamma_, delta_,  diff(alpha_,t), diff(beta_,t), diff(gamma_, t), diff(delta_,t), diff(alpha_,t, t), diff(beta_,t, t), diff(gamma_, t, t), diff(delta_,t, t) ], ...
+    [al, be, ga, de, al_d, be_d, ga_d, de_d, al_dd, be_dd, ga_dd, de_dd]);
+ang_NE_frame = subs(ang_NE_frame, [alpha_, beta_, gamma_, delta_,  diff(alpha_,t), diff(beta_,t), diff(gamma_, t), diff(delta_,t), diff(alpha_,t, t), diff(beta_,t, t), diff(gamma_, t, t), diff(delta_,t, t) ], ...
+    [al, be, ga, de, al_d, be_d, ga_d, de_d, al_dd, be_dd, ga_dd, de_dd]);
+
+
+% equations(1) = ang_NE_rotor(3);
+% equations(2) = ang_NE_frame(1);
+% equations(3) = ang_NE_frame(2);
+% equations(4) = ang_NE_frame(3);
 % 
-% syms T
-% 
-% %ang_NE_rotor = ang_NE_rotor(T);
-% 
-% ang_NE_rotor_EQN = subs(ang_NE_rotor, [alpha_, beta_, gamma_, delta_,  diff(alpha_,t), diff(beta_,t), diff(gamma_, t), diff(delta_,t), diff(alpha_,t, t), diff(beta_,t, t), diff(gamma_, t, t), diff(delta_,t, t) ], ...
-%     [al, be, ga, de, al_d, be_d, ga_d, de_d, al_dd, be_dd, ga_dd, de_dd]);
-% ang_NE_frame = subs(ang_NE_frame, [alpha_, beta_, gamma_, delta_,  diff(alpha_,t), diff(beta_,t), diff(gamma_, t), diff(delta_,t), diff(alpha_,t, t), diff(beta_,t, t), diff(gamma_, t, t), diff(delta_,t, t) ], ...
-%     [al, be, ga, de, al_d, be_d, ga_d, de_d, al_dd, be_dd, ga_dd, de_dd]);
-% 
-% 
-% % equations(1) = ang_NE_rotor(3);
-% % equations(2) = ang_NE_frame(1);
-% % equations(3) = ang_NE_frame(2);
-% % equations(4) = ang_NE_frame(3);
-% % 
-% % 
-% % vars = [al_dd, be_dd, ga_dd, de_dd];
-% % 
-% % [A,b] = equationsToMatrix(equations, vars);
-% % X = A\b;
-% % al_dd = simplify(X(1));
-% % be_dd = simplify(X(2));
-% % ga_dd = simplify(X(3));
-% % de_dd = simplify(X(4));
-% % %clearvars -except al_dd be_dd ga_dd de_dd X
-% 
-% 
-% %% ---------------- solviong EOMs after filling in template. ----------------
-% %forces on rotor
-% [F_Gx, F_Gy, F_Gz] = solve(m_rotor*rOG_4_dotdot == FGrotor_4 + Frotor_4,[F_Gx, F_Gy, F_Gz]) ;
-% frotor_4 = [expand(F_Gx); expand(F_Gy); expand(F_Gz)];
-% %forces on frame
-% frotor_3 = R34*frotor_4;
-% 
-% [F_Ox, F_Oy, F_Oz] = solve(Fframe_3 + FGframe_3 - frotor_3 == m_frame*rOG_3_dotdot, [F_Ox, F_Oy, F_Oz]);
-% fframe_3 = [expand(F_Ox); expand(F_Oy); expand(F_Oz)];
-% %moments on rotor % do in {3} - wait i dont think there are frame units if
-% %applying cancels to both sides to put both in 3 cancels.
-% [M_Gx, M_Gy, M_Gz] = solve(hGrotor_4_dot == Mrotor_4,[M_Gx, M_Gy, M_Gz]);
-% mrotor_4 = [expand(M_Gx); expand(M_Gy); expand(M_Gz)];
-% 
-% %moments on frame
-% 
-% mrotor_3 = R34*mrotor_4;
-% [M_Ox, M_Oy, M_Oz] = solve(hGframe_3_dot == ...
-%     Mframe_3 - mrotor_3 + cross(rGO_3, fframe_3), [M_Ox, M_Oy, M_Oz]);
-% mframe_3 = [expand(M_Ox); expand(M_Oy); expand(M_Oz)];
-% eom1 = mrotor_4(3)==0; 
-% eom2 = mframe_3(1)==0; 
-% eom3 = mframe_3(2)==0;
-% eom4 = mframe_3(3)==0;
-% equations = [eom1;eom2;eom3;eom4]; % 
-% 
-% equations(1) = subs(equations(1), [alpha_, beta_, gamma_, delta_,  diff(alpha_,t), diff(beta_,t), diff(gamma_, t), diff(delta_,t), diff(alpha_,t, t), diff(beta_,t, t), diff(gamma_, t, t), diff(delta_,t, t) ], ...
-%     [al, be, ga, de, al_d, be_d, ga_d, de_d, al_dd, be_dd, ga_dd, de_dd]);
-% 
-% equations(2) = subs(equations(2), [alpha_, beta_, gamma_, delta_, diff(alpha_,t), diff(beta_,t), diff(gamma_, t), diff(delta_,t), diff(alpha_,t, t), diff(beta_,t, t), diff(gamma_, t, t), diff(delta_,t, t) ], ...
-%     [al, be, ga, de, al_d, be_d, ga_d, de_d, al_dd, be_dd, ga_dd, de_dd]);
-% 
-% equations(3) = subs(equations(3), [alpha_, beta_, gamma_, delta_, diff(alpha_,t), diff(beta_,t), diff(gamma_, t), diff(delta_,t), diff(alpha_,t, t), diff(beta_,t, t), diff(gamma_, t, t), diff(delta_,t, t) ], ...
-%     [al, be, ga, de, al_d, be_d, ga_d, de_d, al_dd, be_dd, ga_dd, de_dd]);
-% 
-% equations(4) = subs(equations(4), [alpha_, beta_, gamma_, delta_, diff(alpha_,t), diff(beta_,t), diff(gamma_, t), diff(delta_,t), diff(alpha_,t, t), diff(beta_,t, t), diff(gamma_, t, t), diff(delta_,t, t) ], ...
-%     [al, be, ga, de, al_d, be_d, ga_d, de_d, al_dd, be_dd, ga_dd, de_dd]);
 % 
 % vars = [al_dd, be_dd, ga_dd, de_dd];
-% equations
+% 
 % [A,b] = equationsToMatrix(equations, vars);
 % X = A\b;
 % al_dd = simplify(X(1));
 % be_dd = simplify(X(2));
 % ga_dd = simplify(X(3));
 % de_dd = simplify(X(4));
-% 
-% 
-% 
-% 
-% 
-% 
-% %% EOF
+% %clearvars -except al_dd be_dd ga_dd de_dd X
+
+
+%% ---------------- solviong EOMs after filling in template. ----------------
+%forces on rotor
+[F_Gx, F_Gy, F_Gz] = solve(m_rotor*rOG_4_dotdot == FGrotor_4 + Frotor_4,[F_Gx, F_Gy, F_Gz]) ;
+frotor_4 = [expand(F_Gx); expand(F_Gy); expand(F_Gz)];
+%forces on frame
+frotor_3 = R34*frotor_4;
+
+[F_Ox, F_Oy, F_Oz] = solve(Fframe_3 + FGframe_3 - frotor_3 == m_frame*rOG_3_dotdot, [F_Ox, F_Oy, F_Oz]);
+fframe_3 = [expand(F_Ox); expand(F_Oy); expand(F_Oz)];
+%moments on rotor % do in {3} - wait i dont think there are frame units if
+%applying cancels to both sides to put both in 3 cancels.
+[M_Gx, M_Gy, M_Gz] = solve(hGrotor_4_dot == Mrotor_4,[M_Gx, M_Gy, M_Gz]);
+mrotor_4 = [expand(M_Gx); expand(M_Gy); expand(M_Gz)];
+
+%moments on frame
+
+mrotor_3 = R34*mrotor_4;
+[M_Ox, M_Oy, M_Oz] = solve(hGframe_3_dot == ...
+    Mframe_3 - mrotor_3 + cross(rGO_3, fframe_3), [M_Ox, M_Oy, M_Oz]);
+mframe_3 = [expand(M_Ox); expand(M_Oy); expand(M_Oz)];
+eom1 = mrotor_4(3)==0; 
+eom2 = mframe_3(1)==0; 
+eom3 = mframe_3(2)==0;
+eom4 = mframe_3(3)==0;
+equations = [eom1;eom2;eom3;eom4]; % 
+
+equations(1) = subs(equations(1), [alpha_, beta_, gamma_, delta_,  diff(alpha_,t), diff(beta_,t), diff(gamma_, t), diff(delta_,t), diff(alpha_,t, t), diff(beta_,t, t), diff(gamma_, t, t), diff(delta_,t, t) ], ...
+    [al, be, ga, de, al_d, be_d, ga_d, de_d, al_dd, be_dd, ga_dd, de_dd]);
+
+equations(2) = subs(equations(2), [alpha_, beta_, gamma_, delta_, diff(alpha_,t), diff(beta_,t), diff(gamma_, t), diff(delta_,t), diff(alpha_,t, t), diff(beta_,t, t), diff(gamma_, t, t), diff(delta_,t, t) ], ...
+    [al, be, ga, de, al_d, be_d, ga_d, de_d, al_dd, be_dd, ga_dd, de_dd]);
+
+equations(3) = subs(equations(3), [alpha_, beta_, gamma_, delta_, diff(alpha_,t), diff(beta_,t), diff(gamma_, t), diff(delta_,t), diff(alpha_,t, t), diff(beta_,t, t), diff(gamma_, t, t), diff(delta_,t, t) ], ...
+    [al, be, ga, de, al_d, be_d, ga_d, de_d, al_dd, be_dd, ga_dd, de_dd]);
+
+equations(4) = subs(equations(4), [alpha_, beta_, gamma_, delta_, diff(alpha_,t), diff(beta_,t), diff(gamma_, t), diff(delta_,t), diff(alpha_,t, t), diff(beta_,t, t), diff(gamma_, t, t), diff(delta_,t, t) ], ...
+    [al, be, ga, de, al_d, be_d, ga_d, de_d, al_dd, be_dd, ga_dd, de_dd]);
+
+vars = [al_dd, be_dd, ga_dd, de_dd];
+equations
+[A,b] = equationsToMatrix(equations, vars);
+X = A\b;
+al_dd = simplify(X(1));
+be_dd = simplify(X(2));
+ga_dd = simplify(X(3));
+de_dd = simplify(X(4));
+
+
+
+
+
+
+%% EOF
