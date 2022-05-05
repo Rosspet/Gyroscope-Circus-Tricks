@@ -10,8 +10,8 @@ function animateGyro(t, X, dt, fig, REC, vtitle)
     r = R_min_V_tor;
     
     % Rotor
-    Rr = R_min_rotor;
     Ri = R_maj_rotor;
+    ri = R_min_rotor;
     
     offset = H/2+R_sph;
     
@@ -45,13 +45,13 @@ function animateGyro(t, X, dt, fig, REC, vtitle)
     y_bsph = y_tsph;
     z_bsph = z_tsph-H;
     
-    % Generate rotor outside 
+    % Generate rotor torus
 
-    x_rot = (Rr+Ri.*cos(phi)).*cos(theta);
-    y_rot = (Rr+Ri.*cos(phi)).*sin(theta);
-    z_rot = Ri.*sin(phi)+offset;
+    x_rot = (Ri+ri.*cos(phi)).*cos(theta);
+    y_rot = (Ri+ri.*cos(phi)).*sin(theta);
+    z_rot = ri.*sin(phi)+offset;
     
-    % Generate rotor top and bottom
+    % Generate rotor circle
     % https://au.mathworks.com/matlabcentral/answers/308311-how-to-surf-over-a-circular-domain
     theta = 0:pi/64:2*pi;
     Ri_m = 0:0.001:Ri;
@@ -61,6 +61,17 @@ function animateGyro(t, X, dt, fig, REC, vtitle)
     x_trot = Ri_m.*cos(theta);
     y_trot = Ri_m.*sin(theta);
     z_trot = zeros(size(x_trot))+offset;
+
+    % Generate cone
+    % https://www.youtube.com/watch?v=QDDd3lYY4rU
+    theta = 0:pi/64:2*pi;
+    R_cone = 0:0.001:offset;
+    
+    [R_cone, theta] = meshgrid(R_cone, theta);
+    
+    x_cone = R_cone.*cos(theta);
+    y_cone = R_cone.*sin(theta);
+    z_cone = -1*R_cone;
     
     %% SETUP VIDEO IF REQUIRED
     if REC
@@ -73,7 +84,7 @@ function animateGyro(t, X, dt, fig, REC, vtitle)
     %% Animate Gyro
     hold on;
     grid on;
-    
+
     for i = 1:length(t)
         % Stops plotting when figure is closed
         % https://au.mathworks.com/matlabcentral/answers/182605-how-to-stop-the-program-while-closing-the-figure-that-shows-an-animated-plot
@@ -120,6 +131,9 @@ function animateGyro(t, X, dt, fig, REC, vtitle)
         surf(x_rot_r, y_rot_r, z_rot_r, x_rot, 'EdgeColor','none','FaceColor', 'Interp', 'FaceLighting', 'gouraud');
         surf(x_trot_r, y_trot_r, z_trot_r, x_trot, 'EdgeColor','none','FaceColor', 'Interp', 'FaceLighting', 'gouraud');
     
+        % Display Cone
+        surf(x_cone, y_cone, z_cone, 'EdgeColor','none','FaceColor',[0.5, 0.5, 0.5], 'FaceLighting', 'gouraud');
+        
         % Display Settings
         light('Position',[1 1 2],'Style','local');   
         colormap("turbo");
@@ -127,7 +141,7 @@ function animateGyro(t, X, dt, fig, REC, vtitle)
     
         % Figure Settings
         axis square;
-        axis(offset*[-1 1 -1 1 0 2]);
+        axis(offset*[-2 2 -2 2 -2 2]);
     
         xlabel("X (m)");
         ylabel("Y (m)");

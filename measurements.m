@@ -8,7 +8,7 @@ R_maj_H_tor = 64/1000; % = 68 - 2*R_min_H_tor % IS THIS MEANT TO BE /2 SO 32? OR
 r_rot = 2/1000;
 R_min_H_tor = 1/1000; % maybe 2 for radius
 R_min_V_tor = 1.5/1000; % maybe 3
-R_maj_rotor = 27/1000; % maybe 28
+R_maj_rotor = (27-3.5)/1000; % maybe 28 subtract out the inner radius
 
 % r_rot specified in other view above
 R_min_rotor = 3.5/1000;
