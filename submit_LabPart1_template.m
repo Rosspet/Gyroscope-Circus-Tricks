@@ -82,23 +82,12 @@ IGtorV_3 = [
 
 % Inertia tensor of the rod about its center of mass expressed in frame 3 
 % Variable Name: IGrod_3
-% IGrod_rot = [(1/12)*m_rod_rotor*(3*r_rot^2+H_rot^2) 0 0; 
-%             0 (1/12)*m_rod_rotor*(3*r_rot^2+H_rot^2) 0 
-%             0 0 (1/2)*m_rod_rotor*r_rot^2 
-%             ];
-% 
-% IGrod_frame = [(1/12)*(m_rod_frame/2)*(3*r_rot^2+((h_rod-H_rot)/2)^2) 0 0; 
-%             0 (1/12)*(m_rod_frame/2)*(3*r_rot^2+((h_rod-H_rot)/2)^2) 0 
-%             0 0 (1/2)*(m_rod_frame/2)*r_rot^2 
-%             ];
-
-% delta_z = (L-(h_rod-H_rot)/4);
-% IGrod_3 = 2*IGrod_frame+m_rod_frame*[delta_z^2, 0, 0; 0, delta_z^2, 0; 0, 0, 0]+IGrod_rot;
-m_rod_tot = m_rod_frame + m_rod_rotor ; 
-% removed divide by 2 on m_rod_frames
-IGrod_3 = [(1/12)*(m_rod_tot)*(3*r_rot^2 + h_rod^2), 0, 0;
-            0, (1/12)*(m_rod_tot)*(3*r_rot^2 + h_rod^2), 0;
-            0, 0, (1/2)*(m_rod_tot)*r_rot^2];
+m_rod = m_rod_rotor+m_rod_frame;
+IGrod_3 = [
+            (1/12)*m_rod*(3*r_rot^2+h_rod^2) 0 0; 
+            0 (1/12)*m_rod*(3*r_rot^2+h_rod^2) 0 
+            0 0 (1/2)*m_rod*r_rot^2 
+            ];
 
 % Inertia tensor of the frame about its center of mass expressed in frame 3 (Test)
 % Variable Name: IGframe_3
@@ -237,7 +226,7 @@ ang_NE_rotor = Mrotor_4 == hGrotor_4_dot;
 % %Angular NE Equations for the Frame (Test)
 % variable name: ang_NE_frame
 Mrotor_3 = R34*Mrotor_4;
-rGO_3 = -rOG_3; % we calculatate about G so need to go to force at O and cross this.
+rGO_3 = -rOG_3;
 ang_NE_frame = Mframe_3 == hGframe_3_dot+Mrotor_3-cross(rGO_3, Fframe_3);
 
 % By this point, we have 16 unknown.
@@ -300,11 +289,11 @@ vars = [al_dd, be_dd, ga_dd, de_dd];
 
 [A,b] = equationsToMatrix(EOMS, vars);
 X = A\b;
-% 
-% al_dd = simplify(X(1));
-% be_dd = simplify(X(2));
-% ga_dd = simplify(X(3));
-% de_dd = simplify(X(4));
+
+al_dd = simplify(X(1));
+be_dd = simplify(X(2));
+ga_dd = simplify(X(3));
+de_dd = simplify(X(4));
 
 
 %% ---------------- solviong EOMs after filling in template. ----------------
