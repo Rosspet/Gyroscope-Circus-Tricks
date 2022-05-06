@@ -45,7 +45,7 @@ rho_T = m_frame/(v_T+v_rod_frame);
 % Desity of the rotor [kg/m^3] (Pretest).
 % Variable Name: rho_rotor
 v_rod_rotor = H_rot*pi*r_rot^2;
-v_rotor = (pi*R_min_rotor^2)*(2*pi*R_maj_rotor);
+v_rotor = (pi*R_min_rotor^2)*(2*pi*R_maj_rotor); % volume of rotor is just the taurus - rod is part of frame.
 
 rho_rotor = m_rotor/(v_rod_rotor+v_rotor);
 % Central rod considered as a cylinder belonging to the frame
@@ -198,13 +198,13 @@ syms M_Ox M_Oy M_Oz real
 
 % reaction forces
 % Reaction force to the rotor at Point G
-Frotor_4 = [F_Gx; F_Gy; F_Gz];
+Frotor_4 = [F_Gx; F_Gy; F_Gz]; % frame on rotor
 % Reaction moment to the rotor
-Mrotor_4 = [M_Gx; M_Gy; M_Gz];
+Mrotor_4 = [M_Gx; M_Gy; M_Gz]; % frame on rotor
 % Reaction force to the frame at Point O
-Fframe_3 = [F_Ox; F_Oy; F_Oz];
+Fframe_3 = [F_Ox; F_Oy; F_Oz]; % stand on frame
 % Reaction moment to the frame
-Mframe_3 = [M_Ox; M_Oy; M_Oz];
+Mframe_3 = [M_Ox; M_Oy; M_Oz]; % stand on frame
 
 %zero equations for the reaction forces/moments that don't exist (Prestest)
 % variable name: zero_reaction
@@ -226,7 +226,7 @@ ang_NE_rotor = Mrotor_4 == hGrotor_4_dot;
 % %Angular NE Equations for the Frame (Test)
 % variable name: ang_NE_frame
 Mrotor_3 = R34*Mrotor_4;
-rGO_3 = -rOG_3;
+rGO_3 = -rOG_3; 
 ang_NE_frame = Mframe_3 == hGframe_3_dot+Mrotor_3-cross(rGO_3, Fframe_3);
 
 % By this point, we have 16 unknown.
