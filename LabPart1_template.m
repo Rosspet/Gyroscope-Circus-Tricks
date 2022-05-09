@@ -271,7 +271,7 @@ ang_NE_frame = subs(ang_NE_frame, [alpha_, beta_, gamma_, delta_, diff(alpha_,t)
 
 %%  seprate
 [F_Gx, F_Gy, F_Gz] = solve(lin_NE_rotor, [F_Gx, F_Gy, F_Gz]); % Frotor_4 = [F_Gx; F_Gy; F_Gz];
-%frotor_4 = [simplify(F_Gx); simplify(F_Gy); simplify(F_Gz)]; % we solve for this but isnt used in the equation below as we take angular moment about point this force act on, on the frame.
+frotor_4 = [simplify(F_Gx); simplify(F_Gy); simplify(F_Gz)]; % we solve for this but isnt used in the equation below as we take angular moment about point this force act on, on the frame.
 %frotor_3 = R34*frotor_4;
 
 [F_Ox, F_Oy, F_Oz] = solve(lin_NE_frame, [F_Ox, F_Oy, F_Oz]); % Fframe_3 = [F_Ox; F_Oy; F_Oz];
@@ -287,7 +287,7 @@ ang_NE_frame = subs(ang_NE_frame, [alpha_, beta_, gamma_, delta_, diff(alpha_,t)
 eom1 = M_Gz==0;
 eom2 = M_Ox==0;
 eom3 = M_Oy==0;
-eom4 = mframe_3(3)==0;
+eom4 = M_Oz==0;
 EOMS = [eom1; eom2; eom3; eom4];
 
 syms al be ga de 
@@ -306,7 +306,7 @@ EOMS(3) = subs(EOMS(3), [alpha_, beta_, gamma_, delta_, diff(alpha_,t), diff(bet
 EOMS(4) = subs(EOMS(4), [alpha_, beta_, gamma_, delta_, diff(alpha_,t), diff(beta_,t), diff(gamma_, t), diff(delta_,t), diff(alpha_,t, t), diff(beta_,t, t), diff(gamma_, t, t), diff(delta_,t, t) ], ...
     [al, be, ga, de, al_d, be_d, ga_d, de_d, al_dd, be_dd, ga_dd, de_dd]);
 
-vars = [al_dd, be_dd, ga_dd, de_dd];
-
-[A,b] = equationsToMatrix(EOMS, vars);
-X = A\b;
+% vars = [al_dd, be_dd, ga_dd, de_dd];
+% 
+% [A,b] = equationsToMatrix(EOMS, vars);
+% X = A\b;
