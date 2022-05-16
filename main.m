@@ -56,9 +56,7 @@ set(h2,'Interpreter','latex');
 
 %% Display Animation
 
-if REC
-    sim = subplot(2, 3, [1,2,3,4,5,6]);
-else
+if ~REC
     sim = subplot(2, 3, [2,3,5,6]);
 end
 
