@@ -82,8 +82,6 @@ function animateGyro(t, X, dt, fig, REC, vtitle)
     end
     
     %% Animate Gyro
-    hold on;
-    grid on;
 
     for i = 1:length(t)
         % Stops plotting when figure is closed
@@ -119,7 +117,76 @@ function animateGyro(t, X, dt, fig, REC, vtitle)
         % Rotate Rotor
         [x_rot_r, y_rot_r, z_rot_r] = rotateGyro(x_rot, y_rot, z_rot, R40);
         [x_trot_r, y_trot_r, z_trot_r] = rotateGyro(x_trot, y_trot, z_trot, R40);
+        
+        %% Top View
+        sim1 = subplot(2, 3, [1, 4]);
+        hold on;
+        grid on;
+
+        % Display Frame
+        surf(x_htor_r, y_htor_r, z_htor_r, x_htor, 'EdgeColor','none','FaceColor','Interp', 'FaceLighting', 'gouraud');
+        surf(x_vtor_r, y_vtor_r, z_vtor_r, x_vtor, 'EdgeColor','none', 'FaceColor','Interp', 'FaceLighting', 'gouraud');
+        surf(x_rod_r, y_rod_r, z_rod_r, x_rod, 'EdgeColor','none','FaceColor','Interp', 'FaceLighting', 'gouraud');
+        surf(x_tsph_r, y_tsph_r, z_tsph_r, x_tsph, 'EdgeColor','none','FaceColor','Interp', 'FaceLighting', 'gouraud');
+        surf(x_bsph_r, y_bsph_r, z_bsph_r, x_bsph, 'EdgeColor','none','FaceColor','Interp', 'FaceLighting', 'gouraud');
     
+        % Display Rotor
+        surf(x_rot_r, y_rot_r, z_rot_r, x_rot, 'EdgeColor','none','FaceColor', 'Interp', 'FaceLighting', 'gouraud');
+        surf(x_trot_r, y_trot_r, z_trot_r, x_trot, 'EdgeColor','none','FaceColor', 'Interp', 'FaceLighting', 'gouraud');
+    
+        % Display Cone
+        surf(x_cone, y_cone, z_cone, 'EdgeColor','none','FaceColor',[0.5, 0.5, 0.5], 'FaceLighting', 'gouraud');
+        
+        % Display Settings
+        light('Position',[1 1 2],'Style','local');   
+        colormap("turbo");
+        view(90, 0); 
+    
+        % Figure Settings
+        axis square;
+        axis(offset*[-2 2 -2 2 -2 2]);
+    
+        xlabel("X (m)");
+        ylabel("Y (m)");
+        zlabel("Z (m)");
+        
+        %% Side View
+        sim2 = subplot(2, 3, [2, 5]);
+        hold on;
+        grid on;
+        
+        % Display Frame
+        surf(x_htor_r, y_htor_r, z_htor_r, x_htor, 'EdgeColor','none','FaceColor','Interp', 'FaceLighting', 'gouraud');
+        surf(x_vtor_r, y_vtor_r, z_vtor_r, x_vtor, 'EdgeColor','none', 'FaceColor','Interp', 'FaceLighting', 'gouraud');
+        surf(x_rod_r, y_rod_r, z_rod_r, x_rod, 'EdgeColor','none','FaceColor','Interp', 'FaceLighting', 'gouraud');
+        surf(x_tsph_r, y_tsph_r, z_tsph_r, x_tsph, 'EdgeColor','none','FaceColor','Interp', 'FaceLighting', 'gouraud');
+        surf(x_bsph_r, y_bsph_r, z_bsph_r, x_bsph, 'EdgeColor','none','FaceColor','Interp', 'FaceLighting', 'gouraud');
+    
+        % Display Rotor
+        surf(x_rot_r, y_rot_r, z_rot_r, x_rot, 'EdgeColor','none','FaceColor', 'Interp', 'FaceLighting', 'gouraud');
+        surf(x_trot_r, y_trot_r, z_trot_r, x_trot, 'EdgeColor','none','FaceColor', 'Interp', 'FaceLighting', 'gouraud');
+    
+        % Display Cone
+        surf(x_cone, y_cone, z_cone, 'EdgeColor','none','FaceColor',[0.5, 0.5, 0.5], 'FaceLighting', 'gouraud');
+        
+        % Display Settings
+        light('Position',[1 1 2],'Style','local');   
+        colormap("turbo");
+        view(0, 90); 
+    
+        % Figure Settings
+        axis square;
+        axis(offset*[-2 2 -2 2 -2 2]);
+    
+        xlabel("X (m)");
+        ylabel("Y (m)");
+        zlabel("Z (m)");
+
+        %% Iso View
+        sim3 = subplot(2, 3, [3, 6]);
+        hold on;
+        grid on;
+        
         % Display Frame
         surf(x_htor_r, y_htor_r, z_htor_r, x_htor, 'EdgeColor','none','FaceColor','Interp', 'FaceLighting', 'gouraud');
         surf(x_vtor_r, y_vtor_r, z_vtor_r, x_vtor, 'EdgeColor','none', 'FaceColor','Interp', 'FaceLighting', 'gouraud');
