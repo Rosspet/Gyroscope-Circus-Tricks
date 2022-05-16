@@ -1,221 +1,265 @@
-clc;
-close all;
-clear all;
+syms t real
 
-measurements
+%alpha__, beta_, gamma_ and delta_ time functions
+syms alpha_(t) beta_(t) gamma_(t) delta_(t)
 
-%% Rotation Matrices
-syms t alpha_(t) beta_(t) gamma_(t) delta_(t)
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% Set up measurements (symbolic in part 1)
+% Constants
+syms g                                                      % gravity [ms^-2]
+% Frame Measurements
+syms L                                                      % Distance from O to G [m]
+syms h_rod                                                  % Height of vertical rod [m]
+syms R_min_H_tor                                            % Horizontal torus minor radius [m]
+syms R_maj_H_tor                                            % Horizontal torus marjor radius[m]
+syms R_min_V_tor                                            % Vertical torus minor radius [m]
+syms R_maj_V_tor                                            % Vertical torus major radius [m]
+
+% Rotor measurements
+syms m_frame                                                % Mass of frame [kg] (Measured)
+syms m_rotor                                                % Mass of rotor [kg] (Measured)
+syms H_rot                                                  % Rotor rod height [m]
+syms r_rot                                                  % Rotor rod radius [m] (Vertical rod)
+syms R_min_rotor                                            % Minor radius of rotor torus [m]
+syms R_maj_rotor                                            % Major radius of rotor torus [m]
+
+% Top and bottom spheres (For animation only, DO NOT MODEL THEM AS A PART OF THE FRAME)
+syms R_sph                                                  %radius of the top and bottom spheres [m]
+
+%Calculated constants
+%%%%%% Frame %%%%%
+
+%Total frame density [kg/m^3] (Test).
+% Variable Name: rho_T
+v_ring_H = (pi*R_min_H_tor^2)*(2*pi*R_maj_H_tor); %google
+v_ring_V = (pi*R_min_V_tor^2)*(2*pi*R_maj_V_tor);
+v_rod_frame = (h_rod-H_rot)*pi*r_rot^2;
+v_T = v_ring_V+v_ring_H;
+
+rho_T = m_frame/(v_T+v_rod_frame);
+            
+%%%%%% Rotor %%%%%
+
+% Desity of the rotor [kg/m^3] (Pretest).
+% Variable Name: rho_rotor
+v_rod_rotor = H_rot*pi*r_rot^2;
+v_rotor = (pi*R_min_rotor^2)*(2*pi*R_maj_rotor);
+
+rho_rotor = m_rotor/(v_rod_rotor+v_rotor);
+% Central rod considered as a cylinder belonging to the frame
+
+% Recalculated mass of frame [kg] (Test).
+% Variable Name: m_frame 
+m_rod_rotor = rho_rotor*v_rod_rotor;
+m_rotor = rho_rotor*v_rotor;
+
+m_frame = m_frame+m_rod_rotor;
+m_rod_frame = rho_T*v_rod_frame;
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% Inertia tensor
+% Inerta tensor of the 3 frame components in frame 3 
+
+% Inertia tensor of horizontal torus about its center of mass expressed in frame 3 (Pretest). 
+% Variable Name: IGtorH_3
+m_ring_H = rho_T*v_ring_H; % Taurus desnity
+IGtorH_3 = [
+    (1/8)*m_ring_H*(4*R_maj_H_tor^2 + 5*R_min_H_tor^2) 0 0;
+    0 (1/8)*m_ring_H*(4*R_maj_H_tor^2 + 5*R_min_H_tor^2) 0;
+    0 0 (1/4)*m_ring_H*(4*R_maj_H_tor^2 + 3*R_min_H_tor^2);
+    ];
+
+% Inertia tensor of vertical torus about its center of mass expressed in frame 3 (Test)
+% Variable Name: IGtorV_3
+m_ring_V = rho_T*v_ring_V;
+IGtorV_3 = [
+    (1/8)*m_ring_V*(4*R_maj_V_tor^2 + 5*R_min_V_tor^2) 0 0 ;
+    0 (1/4)*m_ring_V*(4*R_maj_V_tor^2 + 3*R_min_V_tor^2) 0;
+    0 0 (1/8)*m_ring_V*(4*R_maj_V_tor^2 + 5*R_min_V_tor^2);
+    ];
+
+% Inertia tensor of the rod about its center of mass expressed in frame 3 
+% Variable Name: IGrod_3
+m_rod = m_rod_rotor+m_rod_frame;
+IGrod_3 = [
+            (1/12)*m_rod*(3*r_rot^2+h_rod^2) 0 0; 
+            0 (1/12)*m_rod*(3*r_rot^2+h_rod^2) 0 
+            0 0 (1/2)*m_rod*r_rot^2 
+            ];
+
+% Inertia tensor of the frame about its center of mass expressed in frame 3 (Test)
+% Variable Name: IGframe_3
+IGframe_3 = IGrod_3+IGtorV_3+IGtorH_3;
+
+% Inertia tensor of rotor about its center of mass in frame 4 
+% Variable Name: IGrotor_4
+IGrotor_4 = [
+    (1/8)*m_rotor*(4*R_maj_rotor^2 + 5*R_min_rotor^2) 0 0;
+    0 (1/8)*m_rotor*(4*R_maj_rotor^2 + 5*R_min_rotor^2) 0;
+    0 0 (1/4)*m_rotor*(4*R_maj_rotor^2 + 3*R_min_rotor^2);
+    ];
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% Set up rotational matrices
 R01 = [cos(alpha_) -sin(alpha_) 0; sin(alpha_) cos(alpha_) 0; 0 0 1];
 R12 = [1 0 0; 0 cos(beta_) -sin(beta_); 0 sin(beta_) cos(beta_)];
 R23 = [cos(gamma_) -sin(gamma_) 0; sin(gamma_) cos(gamma_) 0; 0 0 1];
-% maybe inverse direction of roation? 
 R34 = [cos(delta_) -sin(delta_) 0; sin(delta_) cos(delta_) 0 ; 0 0 1]; 
-
 R43 = R34.';
 R21 = R12.';
 R32 = R23.';
 R03 = R01*R12*R23;
 R30 = R03.';
 
-%% Angular Velocities
+%Rotation matrix from frame 4 to frame 0 (Pretest).
+%Variable Name: R04
+R04 = R03*R34;
+R40 = R04.';
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% Kinematics
+% Centers of mass positions from origin
+% Center of mass position of the frame. Variable Name: rOG_3
+rOG_3 = [0; 0; L];
+
+% Center of mass position of the rotor. Variable Name: rOG_4
+rOG_4 = [0; 0; L]; % z3,4 are aligneedd.
+
+% Absolute Angular velocity of frame 1 represented in frame 1 
+% Variable Name: w1_1
 w1_0 = [0;0;diff(alpha_,t)];
-w1_1 = w1_0; % rotating about the same axis
+w1_1 = w1_0;
 w1_2 = R21*w1_1;
 
+% Relative angular velocity of frame 2 relative to 1 represented in frame 2 
+% Variable Name: w21_2
 w21_2 = [diff(beta_,t);0;0];
-w21_1 = w21_2; 
 w2_2 = w21_2 + w1_2;
 w2_3 = R32*w2_2;
 
+% Relative angular velocity of frame 3 relative to 2 represented in frame 3
+% Variable Name: w32_3
 w32_3 = [0;0;diff(gamma_,t)];
 w32_2 = w32_3;
+
+% Relative angular velocity of frame 4 relative to 3 represented in frame 4
+% Variable Name: w43_4
+w43_4 = [0;0;diff(delta_,t)];
+
+% Absolute angular velocity of frame 3 represented in frame 3 (Test)
+% Variable Name: w3_3
 w3_3 = w32_3 + w2_3;
 w3_4 = R43*w3_3;
 
-w43_4 = [0;0;diff(delta_,t)];
-w43_3 = w43_4;
+% Velocity of center of mass of the frame represented in frame 3 (Test)
+% Variable Name: rOG_3_dot
+rOG_3_dot = diff(rOG_3,t) + cross(w3_3, rOG_3);
+rOG_3_dotdot = diff(rOG_3_dot, t) + cross(w3_3, rOG_3_dot);
+
+% Acceleration of center of mass of the rotor represented in frame 4 (Test)
+% Variable Name: rOG_4_dotdot
 w4_4 = w43_4 + w3_4;
+rOG_4_dot = diff(rOG_4,t) + cross(w4_4, rOG_4);
+rOG_4_dotdot = diff(rOG_4_dot,t) + cross(w4_4, rOG_4_dot);
 
-%% NE Equations
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% Newton-Euler Equation Setup
+% Force due to gravity on the torus in frame zero
+% Variable Name: FGrotor_0
+FGrotor_0 = [0;0;-g*m_rotor];
+FGrotor_4 = R40*FGrotor_0;
 
-%% ROTOR FORCES.
+% Force due to gravity on the frame in frame zero
+% Variable Name: FGframe_0
+FGframe_0 = [0;0;-g*m_frame];
+FGframe_3 = R30*FGframe_0;
 
-% FORCES
-L = (h_rod-H_rot)/2 + H_rot/2; % Looking at canvas diagram.
-rOG_4 = [0; 0; L]; % z3,4 are aligneedd.
-rOG_dot_4 = diff(rOG_4,t) + cross(w4_4, rOG_4);
-rOG_dot_dot_4 = diff(rOG_dot_4,t) + cross(w4_4, rOG_dot_4);
-p_rotor_dot_4 = m_rotor*rOG_dot_dot_4; % shares G with frame.
-Fg_rotor_0 = [0;0;-gravity*m_rotor];
-Fg_rotor_3 = R30*Fg_rotor_0;
+% rotor angular momentum and its time derivative
+% Variable Name: hGrotor_4
+hGrotor_4 = IGrotor_4*w4_4;
 
-p_rotor_dot_3 = R34*p_rotor_dot_4; %  into {3} as usin {3} for gyroscope frame
+% Variable Name: hGrotor_4_dot (Test)
+hGrotor_4_dot = diff(hGrotor_4,t) + cross(w4_4, hGrotor_4);
 
-% F2_3 %force of frame on rotor in {3}
-%p_rotor_dot_3 == Fg_rotor_3 + F2_3; % solve this
+% frame angular momentum and its time derivative
+% Variable Name: hGframe_3
+hGframe_3 = IGframe_3*w3_3;
 
-%% ROTOR MOMENTS 
-rotor_h = R_min_rotor*2; % height of rotor as we are modelling as cylinder not torus.
-Irotor_G_4 = [
-    (1/12)*m_rotor*(3*R_maj_rotor^2+rotor_h^2) 0 0;
-    0 (1/12)*m_rotor*(3*R_maj_rotor^2+rotor_h^2) 0;
-    0 0 (1/2)*m_rotor*R_maj_rotor^2;
-    ];
-hrotor_G_4 = Irotor_G_4*w4_4;
-hrotor_G_dot_4 = diff(hrotor_G_4,t) + cross(w4_4, hrotor_G_4);
-hrotor_G_dot_3 = R34*hrotor_G_dot_4;
+% Variable Name: hGframe_3_dot (Test)
+hGframe_3_dot = diff(hGframe_3,t) + cross(w3_3, hGframe_3);
 
-% SOLVE BELOW
-%hrotor_G_dot_3 == M_frame_on_rotor_3;
+%Symbolic variables for reaction Forces and Moments
+syms F_Ox F_Oy F_Oz real
+syms F_Gx F_Gy F_Gz real
+syms M_Gx M_Gy M_Gz real
+syms M_Ox M_Oy M_Oz real
+
+% reaction forces
+% Reaction force to the rotor at Point G
+Frotor_4 = [F_Gx; F_Gy; F_Gz];
+% Reaction moment to the rotor
+Mrotor_4 = [M_Gx; M_Gy; M_Gz];
+% Reaction force to the frame at Point O
+Fframe_3 = [F_Ox; F_Oy; F_Oz];
+% Reaction moment to the frame
+Mframe_3 = [M_Ox; M_Oy; M_Oz];
+
+% reaction forces
+% Reaction force to the rotor at Point G
+Frotor_4 = [F_Gx; F_Gy; F_Gz];
+% Reaction moment to the rotor
+Mrotor_4 = [M_Gx; M_Gy; M_Gz];
+% Reaction force to the frame at Point O
+Fframe_3 = [F_Ox; F_Oy; F_Oz];
+% Reaction moment to the frame
+Mframe_3 = [M_Ox; M_Oy; M_Oz];
+
+% NE equations taken from LabPart1_Equation Solutions
+%zero equations for the reaction forces/moments that don't exist
+% variable name: zero_reaction
+zero_reaction = ([M_Gz;M_Ox;M_Oy;M_Oz]==0);
 
 
-%% FRAME FORCES
-rOG_3 = [0; 0; L];
-rOG_dot_3 = diff(rOG_3,t) + cross(w3_3, rOG_3);
-rOG_dot_dot_3 = diff(rOG_dot_3,t) + cross(w3_3, rOG_dot_3);
-p_frame_dot_3 = m_frame*rOG_dot_dot_3; % RHS
+lin_NE_rotor = [F_Gx == (2*R_maj_rotor*R_min_rotor^2*g*m_rotor*pi^2*sin(beta_(t))*(cos(delta_(t))*sin(gamma_(t)) + cos(gamma_(t))*sin(delta_(t))))/(2*R_maj_rotor*pi^2*R_min_rotor^2 + H_rot*pi*r_rot^2) - (R_maj_rotor*R_min_rotor^2*m_rotor*pi^2*(L*(cos(delta_(t))*(sin(gamma_(t))*diff(beta_(t), t, 2) + cos(gamma_(t))*diff(gamma_(t), t)*diff(beta_(t), t) - cos(gamma_(t))*sin(beta_(t))*diff(alpha_(t), t, 2) - cos(beta_(t))*cos(gamma_(t))*diff(beta_(t), t)*diff(alpha_(t), t) + sin(beta_(t))*sin(gamma_(t))*diff(gamma_(t), t)*diff(alpha_(t), t)) + sin(delta_(t))*(cos(gamma_(t))*diff(beta_(t), t, 2) - sin(gamma_(t))*diff(gamma_(t), t)*diff(beta_(t), t) + sin(beta_(t))*sin(gamma_(t))*diff(alpha_(t), t, 2) + cos(beta_(t))*sin(gamma_(t))*diff(beta_(t), t)*diff(alpha_(t), t) + cos(gamma_(t))*sin(beta_(t))*diff(gamma_(t), t)*diff(alpha_(t), t)) + cos(delta_(t))*(cos(gamma_(t))*diff(beta_(t), t) + sin(beta_(t))*sin(gamma_(t))*diff(alpha_(t), t))*diff(delta_(t), t) - sin(delta_(t))*(sin(gamma_(t))*diff(beta_(t), t) - cos(gamma_(t))*sin(beta_(t))*diff(alpha_(t), t))*diff(delta_(t), t)) - L*(cos(delta_(t))*(cos(gamma_(t))*diff(beta_(t), t) + sin(beta_(t))*sin(gamma_(t))*diff(alpha_(t), t)) - sin(delta_(t))*(sin(gamma_(t))*diff(beta_(t), t) - cos(gamma_(t))*sin(beta_(t))*diff(alpha_(t), t)))*(cos(beta_(t))*diff(alpha_(t), t) + diff(delta_(t), t) + diff(gamma_(t), t)))*2)/(2*R_maj_rotor*pi^2*R_min_rotor^2 + H_rot*pi*r_rot^2); 
+                F_Gy == (R_maj_rotor*R_min_rotor^2*m_rotor*pi^2*(L*(- cos(delta_(t))*(cos(gamma_(t))*diff(beta_(t), t, 2) - sin(gamma_(t))*diff(gamma_(t), t)*diff(beta_(t), t) + sin(beta_(t))*sin(gamma_(t))*diff(alpha_(t), t, 2) + cos(beta_(t))*sin(gamma_(t))*diff(beta_(t), t)*diff(alpha_(t), t) + cos(gamma_(t))*sin(beta_(t))*diff(gamma_(t), t)*diff(alpha_(t), t)) + sin(delta_(t))*(sin(gamma_(t))*diff(beta_(t), t, 2) + cos(gamma_(t))*diff(gamma_(t), t)*diff(beta_(t), t) - cos(gamma_(t))*sin(beta_(t))*diff(alpha_(t), t, 2) - cos(beta_(t))*cos(gamma_(t))*diff(beta_(t), t)*diff(alpha_(t), t) + sin(beta_(t))*sin(gamma_(t))*diff(gamma_(t), t)*diff(alpha_(t), t)) + cos(delta_(t))*(sin(gamma_(t))*diff(beta_(t), t) - cos(gamma_(t))*sin(beta_(t))*diff(alpha_(t), t))*diff(delta_(t), t) + sin(delta_(t))*(cos(gamma_(t))*diff(beta_(t), t) + sin(beta_(t))*sin(gamma_(t))*diff(alpha_(t), t))*diff(delta_(t), t)) - L*(cos(delta_(t))*(sin(gamma_(t))*diff(beta_(t), t) - cos(gamma_(t))*sin(beta_(t))*diff(alpha_(t), t)) + sin(delta_(t))*(cos(gamma_(t))*diff(beta_(t), t) + sin(beta_(t))*sin(gamma_(t))*diff(alpha_(t), t)))*(cos(beta_(t))*diff(alpha_(t), t) + diff(delta_(t), t) + diff(gamma_(t), t)))*2)/(2*R_maj_rotor*pi^2*R_min_rotor^2 + H_rot*pi*r_rot^2) + (2*R_maj_rotor*R_min_rotor^2*g*m_rotor*pi^2*sin(beta_(t))*(cos(delta_(t))*cos(gamma_(t)) - sin(delta_(t))*sin(gamma_(t))))/(2*R_maj_rotor*pi^2*R_min_rotor^2 + H_rot*pi*r_rot^2); 
+                F_Gz == (2*R_maj_rotor*R_min_rotor^2*g*m_rotor*pi^2*cos(beta_(t)))/(2*R_maj_rotor*pi^2*R_min_rotor^2 + H_rot*pi*r_rot^2) - (R_maj_rotor*R_min_rotor^2*m_rotor*pi^2*(L*(cos(delta_(t))*(sin(gamma_(t))*diff(beta_(t), t) - cos(gamma_(t))*sin(beta_(t))*diff(alpha_(t), t)) + sin(delta_(t))*(cos(gamma_(t))*diff(beta_(t), t) + sin(beta_(t))*sin(gamma_(t))*diff(alpha_(t), t)))^2 + L*(cos(delta_(t))*(cos(gamma_(t))*diff(beta_(t), t) + sin(beta_(t))*sin(gamma_(t))*diff(alpha_(t), t)) - sin(delta_(t))*(sin(gamma_(t))*diff(beta_(t), t) - cos(gamma_(t))*sin(beta_(t))*diff(alpha_(t), t)))^2)*2)/(2*R_maj_rotor*pi^2*R_min_rotor^2 + H_rot*pi*r_rot^2)];
 
-%LHS - do everything in {3} as p and most forces in 3 except Fg which is
-% F1_3 % stand on frame 
+lin_NE_frame = [F_Ox == F_Gx*cos(delta_(t)) - (L*(sin(gamma_(t))*diff(beta_(t), t, 2) + cos(gamma_(t))*diff(gamma_(t), t)*diff(beta_(t), t) - cos(gamma_(t))*sin(beta_(t))*diff(alpha_(t), t, 2) - cos(beta_(t))*cos(gamma_(t))*diff(beta_(t), t)*diff(alpha_(t), t) + sin(beta_(t))*sin(gamma_(t))*diff(gamma_(t), t)*diff(alpha_(t), t)) - L*(cos(gamma_(t))*diff(beta_(t), t) + sin(beta_(t))*sin(gamma_(t))*diff(alpha_(t), t))*(cos(beta_(t))*diff(alpha_(t), t) + diff(gamma_(t), t)))*((2*R_maj_H_tor*R_min_H_tor^2*m_frame*pi^2)/(2*R_maj_H_tor*pi^2*R_min_H_tor^2 + 2*R_maj_V_tor*pi^2*R_min_V_tor^2 - pi*(H_rot - h_rod)*r_rot^2) - (pi*m_frame*r_rot^2*(H_rot - h_rod))/(2*R_maj_H_tor*pi^2*R_min_H_tor^2 + 2*R_maj_V_tor*pi^2*R_min_V_tor^2 - pi*(H_rot - h_rod)*r_rot^2) + (2*R_maj_V_tor*R_min_V_tor^2*m_frame*pi^2)/(2*R_maj_H_tor*pi^2*R_min_H_tor^2 + 2*R_maj_V_tor*pi^2*R_min_V_tor^2 - pi*(H_rot - h_rod)*r_rot^2) + (pi*H_rot*m_rotor*r_rot^2)/(2*R_maj_rotor*pi^2*R_min_rotor^2 + H_rot*pi*r_rot^2)) - F_Gy*sin(delta_(t)) + g*sin(beta_(t))*sin(gamma_(t))*((2*R_maj_H_tor*R_min_H_tor^2*m_frame*pi^2)/(2*R_maj_H_tor*pi^2*R_min_H_tor^2 + 2*R_maj_V_tor*pi^2*R_min_V_tor^2 - pi*(H_rot - h_rod)*r_rot^2) - (pi*m_frame*r_rot^2*(H_rot - h_rod))/(2*R_maj_H_tor*pi^2*R_min_H_tor^2 + 2*R_maj_V_tor*pi^2*R_min_V_tor^2 - pi*(H_rot - h_rod)*r_rot^2) + (2*R_maj_V_tor*R_min_V_tor^2*m_frame*pi^2)/(2*R_maj_H_tor*pi^2*R_min_H_tor^2 + 2*R_maj_V_tor*pi^2*R_min_V_tor^2 - pi*(H_rot - h_rod)*r_rot^2) + (pi*H_rot*m_rotor*r_rot^2)/(2*R_maj_rotor*pi^2*R_min_rotor^2 + H_rot*pi*r_rot^2)); 
+                F_Oy == F_Gy*cos(delta_(t)) - (L*(cos(gamma_(t))*diff(beta_(t), t, 2) - sin(gamma_(t))*diff(gamma_(t), t)*diff(beta_(t), t) + sin(beta_(t))*sin(gamma_(t))*diff(alpha_(t), t, 2) + cos(beta_(t))*sin(gamma_(t))*diff(beta_(t), t)*diff(alpha_(t), t) + cos(gamma_(t))*sin(beta_(t))*diff(gamma_(t), t)*diff(alpha_(t), t)) + L*(sin(gamma_(t))*diff(beta_(t), t) - cos(gamma_(t))*sin(beta_(t))*diff(alpha_(t), t))*(cos(beta_(t))*diff(alpha_(t), t) + diff(gamma_(t), t)))*((2*R_maj_H_tor*R_min_H_tor^2*m_frame*pi^2)/(2*R_maj_H_tor*pi^2*R_min_H_tor^2 + 2*R_maj_V_tor*pi^2*R_min_V_tor^2 - pi*(H_rot - h_rod)*r_rot^2) - (pi*m_frame*r_rot^2*(H_rot - h_rod))/(2*R_maj_H_tor*pi^2*R_min_H_tor^2 + 2*R_maj_V_tor*pi^2*R_min_V_tor^2 - pi*(H_rot - h_rod)*r_rot^2) + (2*R_maj_V_tor*R_min_V_tor^2*m_frame*pi^2)/(2*R_maj_H_tor*pi^2*R_min_H_tor^2 + 2*R_maj_V_tor*pi^2*R_min_V_tor^2 - pi*(H_rot - h_rod)*r_rot^2) + (pi*H_rot*m_rotor*r_rot^2)/(2*R_maj_rotor*pi^2*R_min_rotor^2 + H_rot*pi*r_rot^2)) + F_Gx*sin(delta_(t)) + g*cos(gamma_(t))*sin(beta_(t))*((2*R_maj_H_tor*R_min_H_tor^2*m_frame*pi^2)/(2*R_maj_H_tor*pi^2*R_min_H_tor^2 + 2*R_maj_V_tor*pi^2*R_min_V_tor^2 - pi*(H_rot - h_rod)*r_rot^2) - (pi*m_frame*r_rot^2*(H_rot - h_rod))/(2*R_maj_H_tor*pi^2*R_min_H_tor^2 + 2*R_maj_V_tor*pi^2*R_min_V_tor^2 - pi*(H_rot - h_rod)*r_rot^2) + (2*R_maj_V_tor*R_min_V_tor^2*m_frame*pi^2)/(2*R_maj_H_tor*pi^2*R_min_H_tor^2 + 2*R_maj_V_tor*pi^2*R_min_V_tor^2 - pi*(H_rot - h_rod)*r_rot^2) + (pi*H_rot*m_rotor*r_rot^2)/(2*R_maj_rotor*pi^2*R_min_rotor^2 + H_rot*pi*r_rot^2)); 
+                F_Oz == F_Gz - (L*(cos(gamma_(t))*diff(beta_(t), t) + sin(beta_(t))*sin(gamma_(t))*diff(alpha_(t), t))^2 + L*(sin(gamma_(t))*diff(beta_(t), t) - cos(gamma_(t))*sin(beta_(t))*diff(alpha_(t), t))^2)*((2*R_maj_H_tor*R_min_H_tor^2*m_frame*pi^2)/(2*R_maj_H_tor*pi^2*R_min_H_tor^2 + 2*R_maj_V_tor*pi^2*R_min_V_tor^2 - pi*(H_rot - h_rod)*r_rot^2) - (pi*m_frame*r_rot^2*(H_rot - h_rod))/(2*R_maj_H_tor*pi^2*R_min_H_tor^2 + 2*R_maj_V_tor*pi^2*R_min_V_tor^2 - pi*(H_rot - h_rod)*r_rot^2) + (2*R_maj_V_tor*R_min_V_tor^2*m_frame*pi^2)/(2*R_maj_H_tor*pi^2*R_min_H_tor^2 + 2*R_maj_V_tor*pi^2*R_min_V_tor^2 - pi*(H_rot - h_rod)*r_rot^2) + (pi*H_rot*m_rotor*r_rot^2)/(2*R_maj_rotor*pi^2*R_min_rotor^2 + H_rot*pi*r_rot^2)) + g*cos(beta_(t))*((2*R_maj_H_tor*R_min_H_tor^2*m_frame*pi^2)/(2*R_maj_H_tor*pi^2*R_min_H_tor^2 + 2*R_maj_V_tor*pi^2*R_min_V_tor^2 - pi*(H_rot - h_rod)*r_rot^2) - (pi*m_frame*r_rot^2*(H_rot - h_rod))/(2*R_maj_H_tor*pi^2*R_min_H_tor^2 + 2*R_maj_V_tor*pi^2*R_min_V_tor^2 - pi*(H_rot - h_rod)*r_rot^2) + (2*R_maj_V_tor*R_min_V_tor^2*m_frame*pi^2)/(2*R_maj_H_tor*pi^2*R_min_H_tor^2 + 2*R_maj_V_tor*pi^2*R_min_V_tor^2 - pi*(H_rot - h_rod)*r_rot^2) + (pi*H_rot*m_rotor*r_rot^2)/(2*R_maj_rotor*pi^2*R_min_rotor^2 + H_rot*pi*r_rot^2))];
 
-Fg_frame_0 = [0;0;-gravity*m_frame]; % gravity on frame.
-Fg_frame_3 = R30*Fg_frame_0; % gravity of frame in {3}
+ang_NE_rotor = [M_Gx == (R_maj_rotor*R_min_rotor^2*m_rotor*pi^2*(cos(delta_(t))*(sin(gamma_(t))*diff(beta_(t), t) - cos(gamma_(t))*sin(beta_(t))*diff(alpha_(t), t)) + sin(delta_(t))*(cos(gamma_(t))*diff(beta_(t), t) + sin(beta_(t))*sin(gamma_(t))*diff(alpha_(t), t)))*(R_maj_rotor^2/2 + (5*R_min_rotor^2)/8)*(cos(beta_(t))*diff(alpha_(t), t) + diff(delta_(t), t) + diff(gamma_(t), t))*2)/(2*R_maj_rotor*pi^2*R_min_rotor^2 + H_rot*pi*r_rot^2) - (R_maj_rotor*R_min_rotor^2*m_rotor*pi^2*(R_maj_rotor^2 + (3*R_min_rotor^2)/4)*(cos(delta_(t))*(sin(gamma_(t))*diff(beta_(t), t) - cos(gamma_(t))*sin(beta_(t))*diff(alpha_(t), t)) + sin(delta_(t))*(cos(gamma_(t))*diff(beta_(t), t) + sin(beta_(t))*sin(gamma_(t))*diff(alpha_(t), t)))*(cos(beta_(t))*diff(alpha_(t), t) + diff(delta_(t), t) + diff(gamma_(t), t))*2)/(2*R_maj_rotor*pi^2*R_min_rotor^2 + H_rot*pi*r_rot^2) - (R_maj_rotor*R_min_rotor^2*m_rotor*pi^2*(R_maj_rotor^2/2 + (5*R_min_rotor^2)/8)*(- cos(delta_(t))*(cos(gamma_(t))*diff(beta_(t), t, 2) - sin(gamma_(t))*diff(gamma_(t), t)*diff(beta_(t), t) + sin(beta_(t))*sin(gamma_(t))*diff(alpha_(t), t, 2) + cos(beta_(t))*sin(gamma_(t))*diff(beta_(t), t)*diff(alpha_(t), t) + cos(gamma_(t))*sin(beta_(t))*diff(gamma_(t), t)*diff(alpha_(t), t)) + sin(delta_(t))*(sin(gamma_(t))*diff(beta_(t), t, 2) + cos(gamma_(t))*diff(gamma_(t), t)*diff(beta_(t), t) - cos(gamma_(t))*sin(beta_(t))*diff(alpha_(t), t, 2) - cos(beta_(t))*cos(gamma_(t))*diff(beta_(t), t)*diff(alpha_(t), t) + sin(beta_(t))*sin(gamma_(t))*diff(gamma_(t), t)*diff(alpha_(t), t)) + cos(delta_(t))*(sin(gamma_(t))*diff(beta_(t), t) - cos(gamma_(t))*sin(beta_(t))*diff(alpha_(t), t))*diff(delta_(t), t) + sin(delta_(t))*(cos(gamma_(t))*diff(beta_(t), t) + sin(beta_(t))*sin(gamma_(t))*diff(alpha_(t), t))*diff(delta_(t), t))*2)/(2*R_maj_rotor*pi^2*R_min_rotor^2 + H_rot*pi*r_rot^2); 
+                M_Gy == (R_maj_rotor*R_min_rotor^2*m_rotor*pi^2*(cos(delta_(t))*(cos(gamma_(t))*diff(beta_(t), t) + sin(beta_(t))*sin(gamma_(t))*diff(alpha_(t), t)) - sin(delta_(t))*(sin(gamma_(t))*diff(beta_(t), t) - cos(gamma_(t))*sin(beta_(t))*diff(alpha_(t), t)))*(R_maj_rotor^2/2 + (5*R_min_rotor^2)/8)*(cos(beta_(t))*diff(alpha_(t), t) + diff(delta_(t), t) + diff(gamma_(t), t))*2)/(2*R_maj_rotor*pi^2*R_min_rotor^2 + H_rot*pi*r_rot^2) - (R_maj_rotor*R_min_rotor^2*m_rotor*pi^2*(R_maj_rotor^2 + (3*R_min_rotor^2)/4)*(cos(delta_(t))*(cos(gamma_(t))*diff(beta_(t), t) + sin(beta_(t))*sin(gamma_(t))*diff(alpha_(t), t)) - sin(delta_(t))*(sin(gamma_(t))*diff(beta_(t), t) - cos(gamma_(t))*sin(beta_(t))*diff(alpha_(t), t)))*(cos(beta_(t))*diff(alpha_(t), t) + diff(delta_(t), t) + diff(gamma_(t), t))*2)/(2*R_maj_rotor*pi^2*R_min_rotor^2 + H_rot*pi*r_rot^2) - (R_maj_rotor*R_min_rotor^2*m_rotor*pi^2*(R_maj_rotor^2/2 + (5*R_min_rotor^2)/8)*(cos(delta_(t))*(sin(gamma_(t))*diff(beta_(t), t, 2) + cos(gamma_(t))*diff(gamma_(t), t)*diff(beta_(t), t) - cos(gamma_(t))*sin(beta_(t))*diff(alpha_(t), t, 2) - cos(beta_(t))*cos(gamma_(t))*diff(beta_(t), t)*diff(alpha_(t), t) + sin(beta_(t))*sin(gamma_(t))*diff(gamma_(t), t)*diff(alpha_(t), t)) + sin(delta_(t))*(cos(gamma_(t))*diff(beta_(t), t, 2) - sin(gamma_(t))*diff(gamma_(t), t)*diff(beta_(t), t) + sin(beta_(t))*sin(gamma_(t))*diff(alpha_(t), t, 2) + cos(beta_(t))*sin(gamma_(t))*diff(beta_(t), t)*diff(alpha_(t), t) + cos(gamma_(t))*sin(beta_(t))*diff(gamma_(t), t)*diff(alpha_(t), t)) + cos(delta_(t))*(cos(gamma_(t))*diff(beta_(t), t) + sin(beta_(t))*sin(gamma_(t))*diff(alpha_(t), t))*diff(delta_(t), t) - sin(delta_(t))*(sin(gamma_(t))*diff(beta_(t), t) - cos(gamma_(t))*sin(beta_(t))*diff(alpha_(t), t))*diff(delta_(t), t))*2)/(2*R_maj_rotor*pi^2*R_min_rotor^2 + H_rot*pi*r_rot^2); 
+                M_Gz == (2*R_maj_rotor*R_min_rotor^2*m_rotor*pi^2*(R_maj_rotor^2 + (3*R_min_rotor^2)/4)*(cos(beta_(t))*diff(alpha_(t), t, 2) - sin(beta_(t))*diff(beta_(t), t)*diff(alpha_(t), t) + diff(delta_(t), t, 2) + diff(gamma_(t), t, 2)))/(2*R_maj_rotor*pi^2*R_min_rotor^2 + H_rot*pi*r_rot^2)];
 
-%summation (3 Equations)
-%recall F2_3 is frame on rotor, so negate to get rotor on frame.
-% F1_3 + Fg_frame_3 - F2_3 == p_frame_dot_3; % solve this
+ang_NE_frame = [M_Ox == ((2*R_maj_H_tor*R_min_H_tor^2*m_frame*pi^2*(R_maj_H_tor^2/2 + (5*R_min_H_tor^2)/8))/(2*R_maj_H_tor*pi^2*R_min_H_tor^2 + 2*R_maj_V_tor*pi^2*R_min_V_tor^2 - pi*(H_rot - h_rod)*r_rot^2) - ((pi*m_frame*r_rot^2*(H_rot - h_rod))/(2*R_maj_H_tor*pi^2*R_min_H_tor^2 + 2*R_maj_V_tor*pi^2*R_min_V_tor^2 - pi*(H_rot - h_rod)*r_rot^2) - (pi*H_rot*m_rotor*r_rot^2)/(2*R_maj_rotor*pi^2*R_min_rotor^2 + H_rot*pi*r_rot^2))*(h_rod^2/12 + r_rot^2/4) + (2*R_maj_V_tor*R_min_V_tor^2*m_frame*pi^2*(R_maj_V_tor^2/2 + (5*R_min_V_tor^2)/8))/(2*R_maj_H_tor*pi^2*R_min_H_tor^2 + 2*R_maj_V_tor*pi^2*R_min_V_tor^2 - pi*(H_rot - h_rod)*r_rot^2))*(cos(gamma_(t))*diff(beta_(t), t, 2) - sin(gamma_(t))*diff(gamma_(t), t)*diff(beta_(t), t) + sin(beta_(t))*sin(gamma_(t))*diff(alpha_(t), t, 2) + cos(beta_(t))*sin(gamma_(t))*diff(beta_(t), t)*diff(alpha_(t), t) + cos(gamma_(t))*sin(beta_(t))*diff(gamma_(t), t)*diff(alpha_(t), t)) + M_Gx*cos(delta_(t)) - F_Oy*L - M_Gy*sin(delta_(t)) + (sin(gamma_(t))*diff(beta_(t), t) - cos(gamma_(t))*sin(beta_(t))*diff(alpha_(t), t))*(cos(beta_(t))*diff(alpha_(t), t) + diff(gamma_(t), t))*((2*R_maj_V_tor*R_min_V_tor^2*m_frame*pi^2*(R_maj_V_tor^2 + (3*R_min_V_tor^2)/4))/(2*R_maj_H_tor*pi^2*R_min_H_tor^2 + 2*R_maj_V_tor*pi^2*R_min_V_tor^2 - pi*(H_rot - h_rod)*r_rot^2) - ((pi*m_frame*r_rot^2*(H_rot - h_rod))/(2*R_maj_H_tor*pi^2*R_min_H_tor^2 + 2*R_maj_V_tor*pi^2*R_min_V_tor^2 - pi*(H_rot - h_rod)*r_rot^2) - (pi*H_rot*m_rotor*r_rot^2)/(2*R_maj_rotor*pi^2*R_min_rotor^2 + H_rot*pi*r_rot^2))*(h_rod^2/12 + r_rot^2/4) + (2*R_maj_H_tor*R_min_H_tor^2*m_frame*pi^2*(R_maj_H_tor^2/2 + (5*R_min_H_tor^2)/8))/(2*R_maj_H_tor*pi^2*R_min_H_tor^2 + 2*R_maj_V_tor*pi^2*R_min_V_tor^2 - pi*(H_rot - h_rod)*r_rot^2)) - (sin(gamma_(t))*diff(beta_(t), t) - cos(gamma_(t))*sin(beta_(t))*diff(alpha_(t), t))*(cos(beta_(t))*diff(alpha_(t), t) + diff(gamma_(t), t))*((2*R_maj_H_tor*R_min_H_tor^2*m_frame*pi^2*(R_maj_H_tor^2 + (3*R_min_H_tor^2)/4))/(2*R_maj_H_tor*pi^2*R_min_H_tor^2 + 2*R_maj_V_tor*pi^2*R_min_V_tor^2 - pi*(H_rot - h_rod)*r_rot^2) - (r_rot^2*((pi*m_frame*r_rot^2*(H_rot - h_rod))/(2*R_maj_H_tor*pi^2*R_min_H_tor^2 + 2*R_maj_V_tor*pi^2*R_min_V_tor^2 - pi*(H_rot - h_rod)*r_rot^2) - (pi*H_rot*m_rotor*r_rot^2)/(2*R_maj_rotor*pi^2*R_min_rotor^2 + H_rot*pi*r_rot^2)))/2 + (2*R_maj_V_tor*R_min_V_tor^2*m_frame*pi^2*(R_maj_V_tor^2/2 + (5*R_min_V_tor^2)/8))/(2*R_maj_H_tor*pi^2*R_min_H_tor^2 + 2*R_maj_V_tor*pi^2*R_min_V_tor^2 - pi*(H_rot - h_rod)*r_rot^2)); 
+                M_Oy == M_Gy*cos(delta_(t)) - ((2*R_maj_V_tor*R_min_V_tor^2*m_frame*pi^2*(R_maj_V_tor^2 + (3*R_min_V_tor^2)/4))/(2*R_maj_H_tor*pi^2*R_min_H_tor^2 + 2*R_maj_V_tor*pi^2*R_min_V_tor^2 - pi*(H_rot - h_rod)*r_rot^2) - ((pi*m_frame*r_rot^2*(H_rot - h_rod))/(2*R_maj_H_tor*pi^2*R_min_H_tor^2 + 2*R_maj_V_tor*pi^2*R_min_V_tor^2 - pi*(H_rot - h_rod)*r_rot^2) - (pi*H_rot*m_rotor*r_rot^2)/(2*R_maj_rotor*pi^2*R_min_rotor^2 + H_rot*pi*r_rot^2))*(h_rod^2/12 + r_rot^2/4) + (2*R_maj_H_tor*R_min_H_tor^2*m_frame*pi^2*(R_maj_H_tor^2/2 + (5*R_min_H_tor^2)/8))/(2*R_maj_H_tor*pi^2*R_min_H_tor^2 + 2*R_maj_V_tor*pi^2*R_min_V_tor^2 - pi*(H_rot - h_rod)*r_rot^2))*(sin(gamma_(t))*diff(beta_(t), t, 2) + cos(gamma_(t))*diff(gamma_(t), t)*diff(beta_(t), t) - cos(gamma_(t))*sin(beta_(t))*diff(alpha_(t), t, 2) - cos(beta_(t))*cos(gamma_(t))*diff(beta_(t), t)*diff(alpha_(t), t) + sin(beta_(t))*sin(gamma_(t))*diff(gamma_(t), t)*diff(alpha_(t), t)) + F_Ox*L + M_Gx*sin(delta_(t)) - (cos(gamma_(t))*diff(beta_(t), t) + sin(beta_(t))*sin(gamma_(t))*diff(alpha_(t), t))*(cos(beta_(t))*diff(alpha_(t), t) + diff(gamma_(t), t))*((2*R_maj_H_tor*R_min_H_tor^2*m_frame*pi^2*(R_maj_H_tor^2 + (3*R_min_H_tor^2)/4))/(2*R_maj_H_tor*pi^2*R_min_H_tor^2 + 2*R_maj_V_tor*pi^2*R_min_V_tor^2 - pi*(H_rot - h_rod)*r_rot^2) - (r_rot^2*((pi*m_frame*r_rot^2*(H_rot - h_rod))/(2*R_maj_H_tor*pi^2*R_min_H_tor^2 + 2*R_maj_V_tor*pi^2*R_min_V_tor^2 - pi*(H_rot - h_rod)*r_rot^2) - (pi*H_rot*m_rotor*r_rot^2)/(2*R_maj_rotor*pi^2*R_min_rotor^2 + H_rot*pi*r_rot^2)))/2 + (2*R_maj_V_tor*R_min_V_tor^2*m_frame*pi^2*(R_maj_V_tor^2/2 + (5*R_min_V_tor^2)/8))/(2*R_maj_H_tor*pi^2*R_min_H_tor^2 + 2*R_maj_V_tor*pi^2*R_min_V_tor^2 - pi*(H_rot - h_rod)*r_rot^2)) + (cos(gamma_(t))*diff(beta_(t), t) + sin(beta_(t))*sin(gamma_(t))*diff(alpha_(t), t))*(cos(beta_(t))*diff(alpha_(t), t) + diff(gamma_(t), t))*((2*R_maj_H_tor*R_min_H_tor^2*m_frame*pi^2*(R_maj_H_tor^2/2 + (5*R_min_H_tor^2)/8))/(2*R_maj_H_tor*pi^2*R_min_H_tor^2 + 2*R_maj_V_tor*pi^2*R_min_V_tor^2 - pi*(H_rot - h_rod)*r_rot^2) - ((pi*m_frame*r_rot^2*(H_rot - h_rod))/(2*R_maj_H_tor*pi^2*R_min_H_tor^2 + 2*R_maj_V_tor*pi^2*R_min_V_tor^2 - pi*(H_rot - h_rod)*r_rot^2) - (pi*H_rot*m_rotor*r_rot^2)/(2*R_maj_rotor*pi^2*R_min_rotor^2 + H_rot*pi*r_rot^2))*(h_rod^2/12 + r_rot^2/4) + (2*R_maj_V_tor*R_min_V_tor^2*m_frame*pi^2*(R_maj_V_tor^2/2 + (5*R_min_V_tor^2)/8))/(2*R_maj_H_tor*pi^2*R_min_H_tor^2 + 2*R_maj_V_tor*pi^2*R_min_V_tor^2 - pi*(H_rot - h_rod)*r_rot^2)); 
+                M_Oz == M_Gz + (cos(beta_(t))*diff(alpha_(t), t, 2) - sin(beta_(t))*diff(beta_(t), t)*diff(alpha_(t), t) + diff(gamma_(t), t, 2))*((2*R_maj_H_tor*R_min_H_tor^2*m_frame*pi^2*(R_maj_H_tor^2 + (3*R_min_H_tor^2)/4))/(2*R_maj_H_tor*pi^2*R_min_H_tor^2 + 2*R_maj_V_tor*pi^2*R_min_V_tor^2 - pi*(H_rot - h_rod)*r_rot^2) - (r_rot^2*((pi*m_frame*r_rot^2*(H_rot - h_rod))/(2*R_maj_H_tor*pi^2*R_min_H_tor^2 + 2*R_maj_V_tor*pi^2*R_min_V_tor^2 - pi*(H_rot - h_rod)*r_rot^2) - (pi*H_rot*m_rotor*r_rot^2)/(2*R_maj_rotor*pi^2*R_min_rotor^2 + H_rot*pi*r_rot^2)))/2 + (2*R_maj_V_tor*R_min_V_tor^2*m_frame*pi^2*(R_maj_V_tor^2/2 + (5*R_min_V_tor^2)/8))/(2*R_maj_H_tor*pi^2*R_min_H_tor^2 + 2*R_maj_V_tor*pi^2*R_min_V_tor^2 - pi*(H_rot - h_rod)*r_rot^2)) - (cos(gamma_(t))*diff(beta_(t), t) + sin(beta_(t))*sin(gamma_(t))*diff(alpha_(t), t))*(sin(gamma_(t))*diff(beta_(t), t) - cos(gamma_(t))*sin(beta_(t))*diff(alpha_(t), t))*((2*R_maj_V_tor*R_min_V_tor^2*m_frame*pi^2*(R_maj_V_tor^2 + (3*R_min_V_tor^2)/4))/(2*R_maj_H_tor*pi^2*R_min_H_tor^2 + 2*R_maj_V_tor*pi^2*R_min_V_tor^2 - pi*(H_rot - h_rod)*r_rot^2) - ((pi*m_frame*r_rot^2*(H_rot - h_rod))/(2*R_maj_H_tor*pi^2*R_min_H_tor^2 + 2*R_maj_V_tor*pi^2*R_min_V_tor^2 - pi*(H_rot - h_rod)*r_rot^2) - (pi*H_rot*m_rotor*r_rot^2)/(2*R_maj_rotor*pi^2*R_min_rotor^2 + H_rot*pi*r_rot^2))*(h_rod^2/12 + r_rot^2/4) + (2*R_maj_H_tor*R_min_H_tor^2*m_frame*pi^2*(R_maj_H_tor^2/2 + (5*R_min_H_tor^2)/8))/(2*R_maj_H_tor*pi^2*R_min_H_tor^2 + 2*R_maj_V_tor*pi^2*R_min_V_tor^2 - pi*(H_rot - h_rod)*r_rot^2)) + (cos(gamma_(t))*diff(beta_(t), t) + sin(beta_(t))*sin(gamma_(t))*diff(alpha_(t), t))*(sin(gamma_(t))*diff(beta_(t), t) - cos(gamma_(t))*sin(beta_(t))*diff(alpha_(t), t))*((2*R_maj_H_tor*R_min_H_tor^2*m_frame*pi^2*(R_maj_H_tor^2/2 + (5*R_min_H_tor^2)/8))/(2*R_maj_H_tor*pi^2*R_min_H_tor^2 + 2*R_maj_V_tor*pi^2*R_min_V_tor^2 - pi*(H_rot - h_rod)*r_rot^2) - ((pi*m_frame*r_rot^2*(H_rot - h_rod))/(2*R_maj_H_tor*pi^2*R_min_H_tor^2 + 2*R_maj_V_tor*pi^2*R_min_V_tor^2 - pi*(H_rot - h_rod)*r_rot^2) - (pi*H_rot*m_rotor*r_rot^2)/(2*R_maj_rotor*pi^2*R_min_rotor^2 + H_rot*pi*r_rot^2))*(h_rod^2/12 + r_rot^2/4) + (2*R_maj_V_tor*R_min_V_tor^2*m_frame*pi^2*(R_maj_V_tor^2/2 + (5*R_min_V_tor^2)/8))/(2*R_maj_H_tor*pi^2*R_min_H_tor^2 + 2*R_maj_V_tor*pi^2*R_min_V_tor^2 - pi*(H_rot - h_rod)*r_rot^2))];
 
-%% FRAME MOMENTS
-%perfect cylinder of height H (h_rod), radius, r_rot
-%(currently omitting the 2 small spheres in Height for simplicity but can add later 
-% if deemed significant, i.e., non negligible.)
+%The equations combined and simplified by Matlab
 
-vol_pole = h_rod*pi*r_rot^2;
-vol_ring_H= (pi*R_min_H_tor^2)*(2*pi*R_maj_H_tor); %google
-vol_ring_V = (pi*R_min_V_tor^2)*(2*pi*R_maj_V_tor);
-vol_frame_tot = vol_pole + vol_ring_V + vol_ring_H;
-rho = m_frame / vol_frame_tot; % finding rho.
+%equations = [zero_reaction; lin_NE_rotor; lin_NE_frame; ang_NE_rotor; ang_NE_frame];
+% pasting solver
+%EOMS = [eom1; eom2; eom3; eom4];
 
-m_pole = rho*vol_pole;
-Ipole_G_3 = [(1/12)*m_pole*(3*r_rot^2+h_rod^2) 0 0; 
-            0 (1/12)*m_pole*(3*r_rot^2+h_rod^2) 0 
-            0 0 (1/2)*m_pole*r_rot^2 
-            ];
-        
-% the ring which goes horizontally - modeled as a torus
-% rho % density of rings and pole.
-m_ring_H = rho*vol_ring_H;    
-IhoriRing_G_3 = [
-    (1/8)*m_ring_H*(4*R_maj_H_tor^2 + 5*R_min_H_tor^2) 0 0;
-    0 (1/8)*m_ring_H*(4*R_maj_H_tor^2 + 5*R_min_H_tor^2) 0;
-    0 0 (1/4)*m_ring_H*(4*R_maj_H_tor^2 + 3*R_min_H_tor^2);
-    ];
-
-m_ring_V = rho*vol_ring_V;
-IvertRing_G_3 = [
-    (1/8)*m_ring_V*(4*R_maj_V_tor^2 + 5*R_min_V_tor^2) 0 0 ;
-    0 (1/4)*m_ring_V*(4*R_maj_V_tor^2 + 3*R_min_V_tor^2) 0;
-    0 0 (1/8)*m_ring_V*(4*R_maj_V_tor^2 + 5*R_min_V_tor^2);
-    ];
-
-% all in same frame and about same point, apply super pos.
-Iframe_G_3 = IvertRing_G_3 + IhoriRing_G_3 + Ipole_G_3;
-
-hframe_G_3 = Iframe_G_3*w3_3;
-hframe_G_3_dot = diff(hframe_G_3,t) + cross(w3_3, hframe_G_3);
-rGO_3 = -rOG_3;
-
-% sumM of Frame about G - 3 eqns - all 3 EOM once put in values for F1_3
-%cross(rGO_3, F1_3) - M_frame_on_rotor_3 == hframe_G_3_dot; % solve this
-
-%% Now solving for EOMS.
-
-%% ROTOR
-% start with last link, the rotor.
-% start last link's (rotor's) forces.
-syms F2x3 F2y3 F2z3
-F2_3 = [F2x3; F2y3; F2z3]; %force of frame on rotor in {3}
-[F2x3, F2y3, F2z3] = solve(p_rotor_dot_3 == Fg_rotor_3 + F2_3 , F2x3, F2y3, F2z3);
-
-f2x3 = expand(F2x3);
-f2y3 = expand(F2y3);
-f2z3 = expand(F2z3);
-f2_3 = [f2x3; f2y3; f2z3];
-
-%M_frame_on_rotor. 
-syms Mx3 My3 Mz3 % Mz3 IS 0 - COME BACK TO THIS
-M_frame_on_rotor_3 = [Mx3; My3; Mz3];
-[Mx3, My3, Mz3] = solve(hrotor_G_dot_3 == M_frame_on_rotor_3, Mx3, My3, Mz3);
-
-mx3 = expand(Mx3);
-my3 = expand(My3);
-mz3 = expand(Mz3);
-m_frame_on_rotor_3 = [mx3; my3; mz3];
-
-eom1 = Mz3 == 0;
-Mz3 = 0; % set to zero so not used later. or could sub in 0 for it at end.
-%% FRAME
-% now move onto the FRAME using what u know from the rotor.
-
-% %F2_3 from the rotor!  only unkown is F1_3
-syms F1x3 F1y3 F1z3
-F1_3 = [F1x3; F1y3; F1z3]; % stand on frame 
-[F1x3, F1y3, F1z3] = solve(F1_3 + Fg_frame_3 - f2_3 == p_frame_dot_3, F1x3, F1y3, F1z3);
-
-f1x3 = expand(F1x3);
-f1y3 = expand(F1y3);
-f1z3 = expand(F1z3);
-f1_3 = [f1x3; f1y3; f1z3];
-
-%cross(rGO_3, F1_3) - M_frame_on_rotor_3 == hframe_G_3_dot; % solve this
-% the moments are 3 eom's as already solved for all desired unkowns!
-m_stand_on_frame_from_forces = cross(rGO_3, f1_3); % these are the moments on the gyro made BY THE FORCES of the stand, which are not 0.
-syms M_standOnFrame_x3 M_standOnFrame_y3 M_standOnFrame_z3 % make these dummies to solve for. they sillve be set to zero later of course sincce the stand only supplies forces.
-M_stand_on_frame = [M_standOnFrame_x3; M_standOnFrame_y3; M_standOnFrame_z3]; % these are the constraint moments from the stand on the gyro, they're all set to 0 later ofc.
-[M_standOnFrame_x3, M_standOnFrame_y3, M_standOnFrame_z3] = solve(M_stand_on_frame + m_stand_on_frame_from_forces - m_frame_on_rotor_3 == hframe_G_3_dot  ...
-    , M_standOnFrame_x3, M_standOnFrame_y3, M_standOnFrame_z3);
-
-% not getting non symbolics for the solved moments as they arent, used
-% further -  we are at the top level.
-
-eom2 = M_standOnFrame_x3==0;
-eom3 = M_standOnFrame_y3==0;
-eom4 = M_standOnFrame_z3==0;
-M_standOnFrame_x3=0; M_standOnFrame_y3=0; M_standOnFrame_z3=0; % they're actually zero. not that it matters for rrest of code.
-
- %% DECOUPLING
-syms al be ga de % is this g conflicting with gravity - not anymore, changed g for gravity to "gravity"
+syms al be ga de 
 syms al_d be_d ga_d de_d
 syms al_dd be_dd ga_dd de_dd
 
-eom1 = subs(eom1, [alpha_, beta_, gamma_, delta_,  diff(alpha_,t), diff(beta_,t), diff(gamma_, t), diff(delta_,t), diff(alpha_,t, t), diff(beta_,t, t), diff(gamma_, t, t), diff(delta_,t, t) ], ...
-    [al, be, ga, de, al_d, be_d, ga_d, de_d, al_dd, be_dd, ga_dd, de_dd]);
+lin_NE_rotor = subs(lin_NE_rotor, [alpha_, beta_, gamma_, delta_,  diff(alpha_,t), diff(beta_,t), diff(gamma_, t), diff(delta_,t), diff(alpha_,t, t), diff(beta_,t, t), diff(gamma_, t, t), diff(delta_,t, t), M_Gz, M_Ox, M_Oy, M_Oz], ...
+    [al, be, ga, de, al_d, be_d, ga_d, de_d, al_dd, be_dd, ga_dd, de_dd, 0, 0, 0, 0]);
 
-eom2 = subs(eom2, [alpha_, beta_, gamma_, delta_, diff(alpha_,t), diff(beta_,t), diff(gamma_, t), diff(delta_,t), diff(alpha_,t, t), diff(beta_,t, t), diff(gamma_, t, t), diff(delta_,t, t) ], ...
-    [al, be, ga, de, al_d, be_d, ga_d, de_d, al_dd, be_dd, ga_dd, de_dd]);
+lin_NE_frame = subs(lin_NE_frame, [alpha_, beta_, gamma_, delta_,  diff(alpha_,t), diff(beta_,t), diff(gamma_, t), diff(delta_,t), diff(alpha_,t, t), diff(beta_,t, t), diff(gamma_, t, t), diff(delta_,t, t), M_Gz, M_Ox, M_Oy, M_Oz], ...
+    [al, be, ga, de, al_d, be_d, ga_d, de_d, al_dd, be_dd, ga_dd, de_dd, 0, 0, 0, 0]);
 
-eom3 = subs(eom3, [alpha_, beta_, gamma_, delta_, diff(alpha_,t), diff(beta_,t), diff(gamma_, t), diff(delta_,t), diff(alpha_,t, t), diff(beta_,t, t), diff(gamma_, t, t), diff(delta_,t, t) ], ...
-    [al, be, ga, de, al_d, be_d, ga_d, de_d, al_dd, be_dd, ga_dd, de_dd]);
+ang_NE_rotor = subs(ang_NE_rotor, [alpha_, beta_, gamma_, delta_,  diff(alpha_,t), diff(beta_,t), diff(gamma_, t), diff(delta_,t), diff(alpha_,t, t), diff(beta_,t, t), diff(gamma_, t, t), diff(delta_,t, t), M_Gz, M_Ox, M_Oy, M_Oz], ...
+    [al, be, ga, de, al_d, be_d, ga_d, de_d, al_dd, be_dd, ga_dd, de_dd, 0, 0, 0, 0]);
 
-eom4 = subs(eom4, [alpha_, beta_, gamma_, delta_, diff(alpha_,t), diff(beta_,t), diff(gamma_, t), diff(delta_,t), diff(alpha_,t, t), diff(beta_,t, t), diff(gamma_, t, t), diff(delta_,t, t) ], ...
-    [al, be, ga, de, al_d, be_d, ga_d, de_d, al_dd, be_dd, ga_dd, de_dd]);
+ang_NE_frame = subs(ang_NE_frame, [alpha_, beta_, gamma_, delta_,  diff(alpha_,t), diff(beta_,t), diff(gamma_, t), diff(delta_,t), diff(alpha_,t, t), diff(beta_,t, t), diff(gamma_, t, t), diff(delta_,t, t), M_Gz, M_Ox, M_Oy, M_Oz], ...
+    [al, be, ga, de, al_d, be_d, ga_d, de_d, al_dd, be_dd, ga_dd, de_dd, 0, 0, 0, 0]);
 
-EOM = [eom1, eom2, eom3, eom4]; 
 vars = [al_dd, be_dd, ga_dd, de_dd];
+equations = [lin_NE_rotor; lin_NE_frame; ang_NE_rotor; ang_NE_frame];
 
-[A,b] = equationsToMatrix(EOM, vars);
-X = A\b;
-al_dd = simplify(X(1));
-be_dd = simplify(X(2))
-ga_dd = simplify(X(3))
-de_dd = simplify(X(4))
-
-% A should be an identity matrix? suppose to do A\b (see wk8 lect)
-% al_dd = simplify(b(1));
-% be_dd = simplify(b(2));
-% ga_dd = simplify(b(3));
-% de_dd = simplify(b(4));
-
-clearvars -except al_dd be_dd ga_dd de_dd X
+[A, b] = equationsToMatrix(equations,vars);
+X = linsolve(A, b);
