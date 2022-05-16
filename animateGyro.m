@@ -106,19 +106,19 @@ function animateGyro(t, X, dt, fig, REC, vtitle)
         R23 = [cos(ga), -sin(ga), 0; sin(ga), cos(ga), 0; 0, 0, 1];
         R34 = [cos(de), -sin(de), 0; sin(de), cos(de), 0; 0, 0, 1];
     
-        R_frame = transpose(R23)*transpose(R12)*transpose(R01);
-        R_rotor = transpose(R34)*R_frame;
+        R30 = transpose(R23)*transpose(R12)*transpose(R01); 
+        R40 = transpose(R34)*R30;
     
         % Rotate Frame
-        [x_htor_r, y_htor_r, z_htor_r] = rotateGyro(x_htor, y_htor, z_htor, R_frame);
-        [x_vtor_r, y_vtor_r, z_vtor_r] = rotateGyro(x_vtor, y_vtor, z_vtor, R_frame);
-        [x_rod_r, y_rod_r, z_rod_r] = rotateGyro(x_rod, y_rod, z_rod, R_frame);
-        [x_tsph_r, y_tsph_r, z_tsph_r] = rotateGyro(x_tsph, y_tsph, z_tsph, R_frame);
-        [x_bsph_r, y_bsph_r, z_bsph_r] = rotateGyro(x_bsph, y_bsph, z_bsph, R_frame);
+        [x_htor_r, y_htor_r, z_htor_r] = rotateGyro(x_htor, y_htor, z_htor, R30);
+        [x_vtor_r, y_vtor_r, z_vtor_r] = rotateGyro(x_vtor, y_vtor, z_vtor, R30);
+        [x_rod_r, y_rod_r, z_rod_r] = rotateGyro(x_rod, y_rod, z_rod, R30);
+        [x_tsph_r, y_tsph_r, z_tsph_r] = rotateGyro(x_tsph, y_tsph, z_tsph, R30);
+        [x_bsph_r, y_bsph_r, z_bsph_r] = rotateGyro(x_bsph, y_bsph, z_bsph, R30);
     
         % Rotate Rotor
-        [x_rot_r, y_rot_r, z_rot_r] = rotateGyro(x_rot, y_rot, z_rot, R_rotor);
-        [x_trot_r, y_trot_r, z_trot_r] = rotateGyro(x_trot, y_trot, z_trot, R_rotor);
+        [x_rot_r, y_rot_r, z_rot_r] = rotateGyro(x_rot, y_rot, z_rot, R40);
+        [x_trot_r, y_trot_r, z_trot_r] = rotateGyro(x_trot, y_trot, z_trot, R40);
     
         % Display Frame
         surf(x_htor_r, y_htor_r, z_htor_r, x_htor, 'EdgeColor','none','FaceColor','Interp', 'FaceLighting', 'gouraud');

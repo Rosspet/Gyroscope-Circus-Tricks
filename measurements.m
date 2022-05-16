@@ -1,3 +1,4 @@
+%clear all; clc; close all;
 %% Measuremeants (in m)
 
 h_rod = 87/1000;  % 93 - 2*3 % maybe include the little shperes.
@@ -16,4 +17,4 @@ R_min_rotor = 3.5/1000;
 %% Mass (in kg)
 m_rotor = 45/1000; 
 m_frame = 23/1000;
-gravity = 9.81;
+%gravity = 9.81;
