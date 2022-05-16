@@ -7,27 +7,28 @@ close all;
 
 %% User Inputs
 
-REC = 0;
-
-al = pi/12;
-be = pi/12;
-ga = pi/12;
-de = pi/12;
-al_d = 0;
-be_d = 0;
-ga_d = 0;
-de_d = 50*pi;
+REC = 1;
+%Positions
+al = pi/1200;
+be = deg2rad(2.5);
+ga = pi/1200;
+de = pi/1200;
+% Velocities
+al_d = 0.00;
+be_d = 0.00;
+ga_d = 0.00;
+de_d = 20*2*pi*3;
 
 %% Generate Simulation
 
 X_init = [al,be,ga,de,al_d,be_d,ga_d,de_d]; 
-tspan = [0 1]; % simulation period
+tspan = [0 2]; % simulation period
 
 % Use findEOMs to setup getXdot
 options = odeset('RelTol',1e-7,'AbsTol',1e-7'); % ode45 options
 sol = ode45(@getXdot, tspan, X_init, options);  % solve gyro sim
 
-dt = 0.01;                  % time step
+dt = 0.0075;                  % time step
 t = tspan(1):dt:tspan(2);   % time vector
 X = deval(sol, t);          % isolate X
 

@@ -137,7 +137,7 @@ function animateGyro(t, X, dt, fig, REC, vtitle)
         % Display Settings
         light('Position',[1 1 2],'Style','local');   
         colormap("turbo");
-        view(3); 
+        view(90,0); 
     
         % Figure Settings
         axis square;
