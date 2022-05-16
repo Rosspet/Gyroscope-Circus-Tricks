@@ -64,13 +64,9 @@ ang_NE_rotor = subs(ang_NE_rotor, [alpha_, beta_, gamma_, delta_,  diff(alpha_,t
 ang_NE_frame = subs(ang_NE_frame, [alpha_, beta_, gamma_, delta_,  diff(alpha_,t), diff(beta_,t), diff(gamma_, t), diff(delta_,t), diff(alpha_,t, t), diff(beta_,t, t), diff(gamma_, t, t), diff(delta_,t, t) ], ...
     [al, be, ga, de, al_d, be_d, ga_d, de_d, al_dd, be_dd, ga_dd, de_dd]);
 
-
-
 %The equations combined and simplified by Matlab
 equations = [zero_reaction; lin_NE_rotor; lin_NE_frame; ang_NE_rotor; ang_NE_frame];
 vars = [F_Ox, F_Oy, F_Oz, F_Gx, F_Gy, F_Gz, M_Gx, M_Gy, M_Gz, M_Ox, M_Oy, M_Oz, al_dd, be_dd, ga_dd, de_dd];
-    
-
 
 [A,b] = equationsToMatrix(equations, vars);
 X = A\b;
