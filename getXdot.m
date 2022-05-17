@@ -16,9 +16,9 @@ function Xdot = getXdot(t, X)
 %     % what my laptop crashed on
     
     damp = 0.017; %damping between rotor and frame. responsible for slowing rotor down and over all time of animation.
-    damp_air_g =  0.3; % damping between frame and air.
-    damp_air_a = 0.1;
-    efficiency = 0.17; % loss between energy transfer from rotor to frame.
+    damp_air_g =  0.6; % damping between frame and air.
+    damp_air_a = 0.3;
+    efficiency = 0.2; % loss between energy transfer from rotor to frame.
     
     % 0.1 an % 2.5
         % next try lower damp (in air) and damp and lower loss (loss is actually retain)    

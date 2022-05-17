@@ -10,7 +10,7 @@ close all;
 REC = 1;
 %Positions
 al = pi/1200;
-be = deg2rad(1.8);
+be = deg2rad(10);
 ga = pi/1200;
 de = pi/1200;
 
@@ -18,7 +18,7 @@ de = pi/1200;
 al_d = 0.00;
 be_d = 0.00;
 ga_d = 0.00;
-de_d = -20*2*pi*3;
+de_d = -20*2*pi*3*3;
  
 %% Generate Simulation
 
