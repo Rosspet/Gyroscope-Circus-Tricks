@@ -10,25 +10,26 @@ close all;
 REC = 1;
 %Positions
 al = pi/1200;
-be = deg2rad(2.5);
+be = deg2rad(1.8);
 ga = pi/1200;
 de = pi/1200;
+
 % Velocities
 al_d = 0.00;
 be_d = 0.00;
 ga_d = 0.00;
-de_d = 20*2*pi*3;
-
+de_d = -20*2*pi*3;
+ 
 %% Generate Simulation
 
 X_init = [al,be,ga,de,al_d,be_d,ga_d,de_d]; 
-tspan = [0 2]; % simulation period
+tspan = [0 70]; % simulation period
 
 % Use findEOMs to setup getXdot
 options = odeset('RelTol',1e-7,'AbsTol',1e-7'); % ode45 options
 sol = ode45(@getXdot, tspan, X_init, options);  % solve gyro sim
 
-dt = 0.0075;                  % time step
+dt = 0.03;                  % time step
 t = tspan(1):dt:tspan(2);   % time vector
 X = deval(sol, t);          % isolate X
 
@@ -63,6 +64,6 @@ end
 
 vtitle = "videos\GyroSim - ["+string(al)+", "+string(be)+", "+string(ga)...
     +", "+string(de)+", "+string(al_d)+", "+string(be_d)+", "+string(ga_d)...
-    +", "+string(de_d)+"]";
+    +", "+string(de_d)+"]"+string(now);
 
 animateGyro(t, X, dt, info, REC, vtitle);

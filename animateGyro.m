@@ -84,6 +84,7 @@ function animateGyro(t, X, dt, fig, REC, vtitle)
     %% Animate Gyro
 
     for i = 1:length(t)
+        disp(t(i))
         % Stops plotting when figure is closed
         % https://au.mathworks.com/matlabcentral/answers/182605-how-to-stop-the-program-while-closing-the-figure-that-shows-an-animated-plot
         if ~ishghandle(fig)
@@ -204,7 +205,7 @@ function animateGyro(t, X, dt, fig, REC, vtitle)
         % Display Settings
         light('Position',[1 1 2],'Style','local');   
         colormap("turbo");
-        view(90,0); 
+        view(3); 
     
         % Figure Settings
         axis square;
