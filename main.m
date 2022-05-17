@@ -42,41 +42,65 @@ hold on;
 sz = get(groot, 'Screensize');
 set(info, 'Position', [sz(3)/4, sz(4)/4, sz(3)/2, sz(4)/2]);
 
-posd = subplot(2, 2, 1);
-plot(t, X(1:4,:));
+subplot(4, 2, 1);
+plot(t, X(1,:), "Color", "red");
 xlabel("Time (s)");
 ylabel("Angular Position (rads)");
-h1 = legend('$\alpha$','$\beta$','$\gamma$','$\delta$');
+h1 = legend('$\alpha$');
 set(h1,'Interpreter','latex');
-t1 = title("Angular Position with $\delta$");
+t1 = title("Angular Position");
 set(t1,'Interpreter','latex');
 
-veld = subplot(2, 2, 2);
-plot(t, X(5:end,:));
-xlabel("Time (s)");
-ylabel("Angular Velocity (rads/s)");
-h2 = legend('$\dot{\alpha}$','$\dot{\beta}$','$\dot{\gamma}$','$\dot{\delta}$');
-set(h2,'Interpreter','latex');
-t2 = title("Angular Velocity with $\delta$");
-set(t2,'Interpreter','latex');
-
-pos = subplot(2, 2, 3);
-plot(t, X(1:3,:));
+subplot(4, 2, 3);
+plot(t, X(2,:), "Color", "magenta");
 xlabel("Time (s)");
 ylabel("Angular Position (rads)");
-h1 = legend('$\alpha$','$\beta$','$\gamma$','$\delta$');
+h1 = legend('$\beta$');
 set(h1,'Interpreter','latex');
-t3 = title("Angular Position without $\delta$");
-set(t3,'Interpreter','latex');
 
-vel = subplot(2, 2, 4);
-plot(t, X(5:end-1,:));
+subplot(4, 2, 5);
+plot(t, X(3,:), "Color", "green");
+xlabel("Time (s)");
+ylabel("Angular Position (rads)");
+h1 = legend('$\gamma$');
+set(h1,'Interpreter','latex');
+
+subplot(4, 2, 7);
+plot(t, X(4,:));
+xlabel("Time (s)");
+ylabel("Angular Position (rads)");
+h1 = legend('$\delta$');
+set(h1,'Interpreter','latex');
+
+subplot(4, 2, 2);
+plot(t, X(5,:), "Color", "red");
 xlabel("Time (s)");
 ylabel("Angular Velocity (rads/s)");
-h2 = legend('$\dot{\alpha}$','$\dot{\beta}$','$\dot{\gamma}$','$\dot{\delta}$');
+h2 = legend('$\dot{\alpha}$');
 set(h2,'Interpreter','latex');
-t4 = title("Angular Velocity without $\delta$");
-set(t4,'Interpreter','latex');
+t2 = title("Angular Velocity");
+set(t2,'Interpreter','latex');
+
+subplot(4, 2, 4);
+plot(t, X(6,:), "Color", "magenta");
+xlabel("Time (s)");
+ylabel("Angular Velocity (rads/s)");
+h2 = legend('$\dot{\beta}$');
+set(h2,'Interpreter','latex');
+
+subplot(4, 2, 6);
+plot(t, X(7,:), "Color", "green");
+xlabel("Time (s)");
+ylabel("Angular Velocity (rads/s)");
+h2 = legend('$\dot{\gamma}$');
+set(h2,'Interpreter','latex');
+
+subplot(4, 2, 8);
+plot(t, X(8,:));
+xlabel("Time (s)");
+ylabel("Angular Velocity (rads/s)");
+h2 = legend('$\dot{\delta}$');
+set(h2,'Interpreter','latex');
 
 %% Display Animation
 % View without recording
