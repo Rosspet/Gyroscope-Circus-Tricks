@@ -7,7 +7,7 @@ close all;
 
 %% User Inputs
 
-REC = 1;
+REC = 0;
 %Positions
 al = pi/1200;
 be = deg2rad(1.8);
@@ -42,28 +42,54 @@ hold on;
 sz = get(groot, 'Screensize');
 set(info, 'Position', [sz(3)/4, sz(4)/4, sz(3)/2, sz(4)/2]);
 
-pos = subplot(2, 3, 1);
+posd = subplot(2, 2, 1);
 plot(t, X(1:4,:));
 xlabel("Time (s)");
 ylabel("Angular Position (rads)");
 h1 = legend('$\alpha$','$\beta$','$\gamma$','$\delta$');
 set(h1,'Interpreter','latex');
+t1 = title("Angular Position with $\delta$");
+set(t1,'Interpreter','latex');
 
-vel = subplot(2, 3, 4);
+veld = subplot(2, 2, 2);
 plot(t, X(5:end,:));
 xlabel("Time (s)");
 ylabel("Angular Velocity (rads/s)");
 h2 = legend('$\dot{\alpha}$','$\dot{\beta}$','$\dot{\gamma}$','$\dot{\delta}$');
 set(h2,'Interpreter','latex');
+t2 = title("Angular Velocity with $\delta$");
+set(t2,'Interpreter','latex');
+
+pos = subplot(2, 2, 3);
+plot(t, X(1:3,:));
+xlabel("Time (s)");
+ylabel("Angular Position (rads)");
+h1 = legend('$\alpha$','$\beta$','$\gamma$','$\delta$');
+set(h1,'Interpreter','latex');
+t3 = title("Angular Position without $\delta$");
+set(t3,'Interpreter','latex');
+
+vel = subplot(2, 2, 4);
+plot(t, X(5:end-1,:));
+xlabel("Time (s)");
+ylabel("Angular Velocity (rads/s)");
+h2 = legend('$\dot{\alpha}$','$\dot{\beta}$','$\dot{\gamma}$','$\dot{\delta}$');
+set(h2,'Interpreter','latex');
+t4 = title("Angular Velocity without $\delta$");
+set(t4,'Interpreter','latex');
 
 %% Display Animation
+% View without recording
+ANI = 0;
 
-if ~REC
-    sim = subplot(2, 3, [2,3,5,6]);
+if REC == 1 || ANI == 1
+
+    % Can be Top, Side, Isometric or All
+    s_view = "Top";
+    
+    vtitle = "videos\GyroSim - ["+string(al)+", "+string(be)+", "+string(ga)...
+        +", "+string(de)+", "+string(al_d)+", "+string(be_d)+", "+string(ga_d)...
+        +", "+string(de_d)+", "+s_view+"]"+string(now);
+    
+    animateGyro(t, X, dt, info, REC, vtitle, s_view);
 end
-
-vtitle = "videos\GyroSim - ["+string(al)+", "+string(be)+", "+string(ga)...
-    +", "+string(de)+", "+string(al_d)+", "+string(be_d)+", "+string(ga_d)...
-    +", "+string(de_d)+"]"+string(now);
-
-animateGyro(t, X, dt, info, REC, vtitle);
