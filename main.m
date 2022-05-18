@@ -5,25 +5,26 @@ clc;
 clear all;
 close all;
 
-%% User Inputs
+%% User Inputs 4
 
-REC = 0;
+REC = 1;
+t_end = 70;
 %Positions
 al = pi/1200;
-be = deg2rad(10);
+be = deg2rad(2);
 ga = pi/1200;
 de = pi/1200;
 
 % Velocities
 al_d = 0.00;
 be_d = 0.00;
-ga_d = 0.00;
-de_d = -20*2*pi*3*3;
- 
+ga_d = 0; % set to 4-6 if no friction.
+de_d = 20*2*pi*3.3;
+
 %% Generate Simulation
 
 X_init = [al,be,ga,de,al_d,be_d,ga_d,de_d]; 
-tspan = [0 70]; % simulation period
+tspan = [0 t_end]; % simulation period
 
 % Use findEOMs to setup getXdot
 options = odeset('RelTol',1e-7,'AbsTol',1e-7'); % ode45 options
@@ -80,12 +81,13 @@ set(t4,'Interpreter','latex');
 
 %% Display Animation
 % View without recording
-ANI = 0;
+ANI = 0; % to view ithout recoridng, set to 1.
+% if recording is 0, and ANI is 0, show graphs. Keep ANI as 0.
 
 if REC == 1 || ANI == 1
 
     % Can be Top, Side, Isometric or All
-    s_view = "Top";
+    s_view = "Isometric";
     
     vtitle = "videos\GyroSim - ["+string(al)+", "+string(be)+", "+string(ga)...
         +", "+string(de)+", "+string(al_d)+", "+string(be_d)+", "+string(ga_d)...
